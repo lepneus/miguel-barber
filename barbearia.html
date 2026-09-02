@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miguel do Corte — Barbearia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1A1815;
+    --paper:#F1EBDD;
+    --paper-soft:#E7DFCC;
+    --brass:#A67C3D;
+    --brass-light:#C79A54;
+    --rust:#7A3B2E;
+    --stone:#6B6259;
+    --line: rgba(26,24,21,0.14);
+    --ok:#3E5C3A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:26px 6vw;
+    position:relative;
+    z-index:5;
+  }
+  .brand{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:0.02em;
+  }
+  .brand span{color:var(--rust);}
+  .nav-cta{
+    border:1px solid var(--ink);
+    background:none;
+    padding:10px 20px;
+    border-radius:2px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .nav-cta:hover{background:var(--ink);color:var(--paper);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap:40px;
+    padding: 40px 6vw 90px;
+    align-items:end;
+  }
+  .hero-eyebrow{
+    font-size:14px;
+    color:var(--rust);
+    margin-bottom:18px;
+    font-weight:600;
+  }
+  .hero h1{
+    font-size:clamp(40px, 6vw, 74px);
+    line-height:0.98;
+    max-width:11ch;
+  }
+  .hero-sub{
+    margin-top:26px;
+    font-size:17px;
+    line-height:1.6;
+    max-width:46ch;
+    color:#3a352e;
+  }
+  .hero-actions{
+    margin-top:34px;
+    display:flex;
+    gap:16px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .btn-primary{
+    background:var(--rust);
+    color:var(--paper);
+    border:none;
+    padding:16px 30px;
+    border-radius:2px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn-primary:hover{background:#622c22; transform:translateY(-1px);}
+  .hero-hours{
+    font-size:14px;
+    color:var(--stone);
+    line-height:1.7;
+  }
+  .hero-hours strong{color:var(--ink);}
+
+  .hero-card{
+    border:1px solid var(--ink);
+    padding:34px;
+    background:var(--paper-soft);
+    position:relative;
+  }
+  .hero-card::before{
+    content:'';
+    position:absolute;
+    top:12px; left:12px; right:-12px; bottom:-12px;
+    border:1px solid var(--line);
+    z-index:-1;
+  }
+  .hero-card h3{
+    font-size:22px;
+    margin-bottom:18px;
+  }
+  .service-line{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .service-line:last-child{border-bottom:none;}
+  .service-line span:last-child{color:var(--stone);}
+
+  /* ---------- SECTION LABEL ---------- */
+  .section-pad{padding:0 6vw;}
+  .divider{
+    height:1px;
+    background:var(--line);
+    margin:0 6vw;
+  }
+
+  /* ---------- BOOKING WIDGET ---------- */
+  .booking{
+    padding:90px 6vw 120px;
+  }
+  .booking-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:44px;
+    flex-wrap:wrap;
+    gap:20px;
+  }
+  .booking-head h2{
+    font-size:clamp(30px,4vw,44px);
+  }
+  .progress{
+    display:flex;
+    gap:8px;
+  }
+  .progress-dot{
+    width:34px;
+    text-align:center;
+    font-size:12px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--line);
+    color:var(--stone);
+    font-weight:600;
+  }
+  .progress-dot.active{
+    border-bottom-color:var(--rust);
+    color:var(--rust);
+  }
+  .progress-dot.done{
+    border-bottom-color:var(--brass);
+    color:var(--ink);
+  }
+
+  .ticket{
+    background:var(--paper-soft);
+    border:1px solid var(--ink);
+    max-width:640px;
+    padding:44px;
+    position:relative;
+  }
+  .ticket::after{
+    content:'';
+    position:absolute;
+    top:-1px; bottom:-1px; right:-1px;
+    width:0;
+  }
+
+  .field-label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--stone);
+    margin-bottom:8px;
+    display:block;
+  }
+  .input{
+    width:100%;
+    padding:14px 16px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    font-family:'Archivo', sans-serif;
+    font-size:16px;
+    color:var(--ink);
+    border-radius:2px;
+    margin-bottom:22px;
+  }
+  .input:focus{outline:2px solid var(--brass); outline-offset:1px;}
+
+  .step-actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:28px;
+  }
+  .btn-ghost{
+    background:none;
+    border:none;
+    color:var(--stone);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    padding:10px 4px;
+  }
+  .btn-ghost:hover{color:var(--ink);}
+  .btn-ghost:disabled{opacity:0.35; cursor:default;}
+
+  /* service select */
+  .svc-option{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    margin-bottom:12px;
+    cursor:pointer;
+    background:var(--paper);
+    transition:border-color .15s ease;
+  }
+  .svc-option.selected{
+    border-color:var(--rust);
+    background:#eee2c9;
+  }
+  .svc-left{display:flex; align-items:center; gap:14px;}
+  .svc-check{
+    width:20px;height:20px;
+    border:1.5px solid var(--ink);
+    border-radius:3px;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .svc-check svg{opacity:0; width:12px; height:12px;}
+  .svc-option.selected .svc-check{background:var(--rust); border-color:var(--rust);}
+  .svc-option.selected .svc-check svg{opacity:1;}
+  .svc-name{font-weight:600; font-size:16px;}
+  .svc-dur{font-size:13px; color:var(--stone);}
+  .svc-total{
+    display:flex;
+    justify-content:space-between;
+    padding-top:18px;
+    margin-top:6px;
+    border-top:1px dashed var(--line);
+    font-weight:600;
+    font-size:15px;
+  }
+
+  /* calendar */
+  .cal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .cal-nav-btn{
+    background:none;
+    border:1px solid var(--ink);
+    width:32px;height:32px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cal-nav-btn:hover{background:var(--ink); color:var(--paper);}
+  .cal-month{font-size:17px; font-weight:600;}
+  .cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .cal-dow{
+    text-align:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--stone);
+    padding-bottom:6px;
+  }
+  .cal-day{
+    aspect-ratio:1;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    border-radius:50%;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .cal-day.empty{cursor:default;}
+  .cal-day.disabled{color:#c9c0ac; cursor:not-allowed;}
+  .cal-day.available:hover{border-color:var(--ink);}
+  .cal-day.selected{background:var(--rust); color:var(--paper); font-weight:700;}
+  .cal-note{font-size:13px; color:var(--stone); margin-top:6px;}
+
+  /* time slots */
+  .slot-period{font-size:13px; font-weight:700; color:var(--stone); margin:20px 0 10px; text-transform:none;}
+  .slot-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+  }
+  .slot{
+    padding:11px 6px;
+    text-align:center;
+    border:1px solid var(--ink);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    border-radius:2px;
+    background:var(--paper);
+  }
+  .slot:hover{background:#eee2c9;}
+  .slot.selected{background:var(--rust); color:var(--paper); border-color:var(--rust);}
+  .slot-empty{
+    font-size:14px;
+    color:var(--stone);
+    padding:20px 0;
+  }
+
+  /* confirm */
+  .confirm-row{
+    display:flex;
+    justify-content:space-between;
+    padding:13px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .confirm-row:last-child{border-bottom:none;}
+  .confirm-row span:first-child{color:var(--stone);}
+
+  /* success */
+  .success-mark{
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--ok);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:20px;
+  }
+  .success-mark svg{width:26px;height:26px;}
+
+  .loading-msg{font-size:14px; color:var(--stone);}
+
+  footer{
+    padding:36px 6vw;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--stone);
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  /* ---------- ADMIN ---------- */
+  .admin-overlay{
+    position:fixed; inset:0;
+    background:rgba(26,24,21,0.55);
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .admin-panel{
+    background:var(--paper);
+    border:1px solid var(--ink);
+    width:100%;
+    max-width:560px;
+    max-height:86vh;
+    overflow-y:auto;
+    padding:32px;
+  }
+  .admin-panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:24px;
+  }
+  .admin-date-input{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    font-family:'Archivo', sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    border-radius:2px;
+    margin-bottom:20px;
+  }
+  .admin-booking{
+    border:1px solid var(--line);
+    padding:16px 18px;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .admin-booking-info{font-size:14px; line-height:1.6;}
+  .admin-booking-info strong{font-size:15px;}
+  .admin-cancel-btn{
+    background:none;
+    border:1px solid var(--rust);
+    color:var(--rust);
+    padding:8px 14px;
+    font-size:13px;
+    font-weight:600;
+    border-radius:2px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .admin-cancel-btn:hover{background:var(--rust); color:var(--paper);}
+  .admin-empty{font-size:14px; color:var(--stone); padding:10px 0;}
+
+  .admin-tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--line);
+  }
+  .admin-tab{
+    background:none;
+    border:none;
+    padding:10px 4px;
+    margin-right:18px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--stone);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .admin-tab.active{color:var(--ink); border-bottom-color:var(--rust);}
+
+  .admin-date-group{margin-bottom:22px;}
+  .admin-date-heading{
+    font-size:13px;
+    font-weight:700;
+    color:var(--rust);
+    text-transform:capitalize;
+    margin-bottom:10px;
+    padding-bottom:6px;
+    border-bottom:1px dashed var(--line);
+  }
+
+  .admin-field{margin-bottom:20px;}
+  .admin-field label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--stone);
+    display:block;
+    margin-bottom:8px;
+  }
+  .admin-field textarea{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    font-family:'Archivo', sans-serif;
+    font-size:14px;
+    color:var(--ink);
+    border-radius:2px;
+    min-height:80px;
+    resize:vertical;
+  }
+  .color-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .color-row-label{font-size:14px; font-weight:600;}
+  .color-row-desc{font-size:12px; color:var(--stone); margin-top:2px;}
+  .color-swatch{
+    width:44px; height:34px;
+    border:1px solid var(--ink);
+    border-radius:2px;
+    cursor:pointer;
+    padding:0;
+    background:none;
+  }
+  .admin-save-msg{
+    font-size:13px;
+    color:var(--ok);
+    font-weight:600;
+    margin-top:14px;
+    display:none;
+  }
+
+  @media (max-width: 860px){
+    .hero{grid-template-columns:1fr; padding-bottom:60px;}
+    .hero-card{order:-1;}
+    .slot-grid{grid-template-columns:repeat(2,1fr);}
+    .nav{padding:20px 5vw;}
+    .booking{padding:60px 5vw 90px;}
+    .ticket{padding:28px 22px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand">Miguel <span>do</span> Corte</div>
+  <div style="display:flex; align-items:center; gap:18px;">
+    <a href="#" id="admin-link" style="font-size:13px; color:var(--stone); text-decoration:none;">Administração</a>
+    <button class="nav-cta" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Agendar horário</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="hero-eyebrow" id="hero-eyebrow">Barbearia de bairro, corte de verdade</div>
+    <h1 id="hero-title">Seu horário marcado sem esperar na porta.</h1>
+    <p class="hero-sub" id="hero-sub">Corte, barba e sobrancelha com hora certa. Escolha o serviço, veja o horário livre no dia e pronto — sem ligação, sem fila.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Agendar meu horário</button>
+      <div class="hero-hours">
+        <strong>Seg a Sáb</strong> · 08h–12h e 13h30–19h<br>
+        Domingo fechado
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-card">
+    <h3>Serviços</h3>
+    <div class="service-line"><span>Corte</span><span>30 min</span></div>
+    <div class="service-line"><span>Barba</span><span>20 min</span></div>
+    <div class="service-line"><span>Sobrancelha</span><span>20 min</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="booking" id="booking">
+  <div class="booking-head">
+    <h2>Marque seu horário</h2>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="ticket" id="ticket"></div>
+</section>
+
+<footer>
+  <div>Miguel do Corte — troque este texto e as informações de contato como preferir.</div>
+  <div>Seg–Sáb · 08h–12h / 13h30–19h · Dom fechado</div>
+</footer>
+
+<!-- ---------- PAINEL ADMINISTRATIVO ---------- -->
+<div id="admin-overlay" class="admin-overlay" style="display:none;">
+  <div class="admin-panel">
+    <div class="admin-panel-head">
+      <div class="serif" style="font-size:20px;">Painel administrativo</div>
+      <button id="admin-close" class="cal-nav-btn">×</button>
+    </div>
+    <div id="admin-body"></div>
+  </div>
+</div>
+
+<script>
+/* ---------------- CONFIG ---------------- */
+const SERVICES = [
+  { id:'corte', name:'Corte', duration:30 },
+  { id:'barba', name:'Barba', duration:20 },
+  { id:'sobrancelha', name:'Sobrancelha', duration:20 },
+];
+const WINDOWS = [
+  { start: 8*60,      end: 12*60 },      // 08:00 - 12:00
+  { start: 13*60+30,  end: 19*60 },      // 13:30 - 19:00
+];
+const STEP_MIN = 10; // granularidade dos horários oferecidos
+const STEPS = ['Você','Serviço','Data','Horário','Confirmar'];
+
+/* ---------------- STATE ---------------- */
+let state = {
+  step: 0,
+  name: '',
+  phone: '',
+  services: [],
+  calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  date: null,       // 'YYYY-MM-DD'
+  time: null,       // minutes since midnight
+  bookings: [],      // bookings for selected date
+  loadingBookings: false,
+  justBooked: false,
+};
+
+const DOW_LABELS = ['D','S','T','Q','Q','S','S'];
+const MONTH_LABELS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function toDateStr(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function minutesToLabel(m){ return pad(Math.floor(m/60))+':'+pad(m%60); }
+function totalDuration(){ return state.services.reduce((sum,id)=>sum + SERVICES.find(s=>s.id===id).duration, 0); }
+
+/* ---------------- STORAGE ---------------- */
+async function loadBookingsForDate(dateStr){
+  state.loadingBookings = true;
+  render();
+  try{
+    const res = await window.storage.get('bookings:'+dateStr, true);
+    state.bookings = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    state.bookings = [];
+  }
+  state.loadingBookings = false;
+  render();
+}
+
+async function saveBooking(dateStr, booking){
+  let existing = [];
+  try{
+    const res = await window.storage.get('bookings:'+dateStr, true);
+    existing = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ existing = []; }
+  existing.push(booking);
+  await window.storage.set('bookings:'+dateStr, JSON.stringify(existing), true);
+  return existing;
+}
+
+/* ---------------- SLOT LOGIC ---------------- */
+function getAvailableSlots(dateStr, duration, bookings){
+  const now = new Date();
+  const isToday = toDateStr(now) === dateStr;
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+
+  const slots = [];
+  WINDOWS.forEach(win=>{
+    for(let start = win.start; start + duration <= win.end; start += STEP_MIN){
+      if(isToday && start <= nowMinutes) continue;
+      const end = start + duration;
+      const overlaps = bookings.some(b => start < b.end && end > b.start);
+      if(!overlaps){
+        slots.push({start, end});
+      }
+    }
+  });
+  return slots;
+}
+
+function isBusinessDay(date){
+  return date.getDay() !== 0; // domingo fechado
+}
+
+/* ---------------- RENDER ---------------- */
+function render(){
+  renderProgress();
+  const el = document.getElementById('ticket');
+  el.innerHTML = '';
+  if(state.justBooked){ el.appendChild(renderSuccess()); return; }
+  switch(state.step){
+    case 0: el.appendChild(renderStepIdentity()); break;
+    case 1: el.appendChild(renderStepServices()); break;
+    case 2: el.appendChild(renderStepDate()); break;
+    case 3: el.appendChild(renderStepTime()); break;
+    case 4: el.appendChild(renderStepConfirm()); break;
+  }
+}
+
+function renderProgress(){
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  STEPS.forEach((label, i)=>{
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i===state.step && !state.justBooked ? ' active' : (i<state.step || state.justBooked ? ' done' : ''));
+    d.textContent = (i+1);
+    p.appendChild(d);
+  });
+}
+
+function h(tag, attrs={}, children=[]){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='class') e.className = attrs[k];
+    else if(k==='html') e.innerHTML = attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.substring(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  (Array.isArray(children)?children:[children]).forEach(c=>{
+    if(c===null || c===undefined) return;
+    if(typeof c === 'string') e.appendChild(document.createTextNode(c));
+    else e.appendChild(c);
+  });
+  return e;
+}
+
+/* --- Step 0: identidade --- */
+function renderStepIdentity(){
+  const wrap = h('div');
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:24px;margin-bottom:22px;'}, 'Como podemos te chamar?'));
+
+  const nameLabel = h('label',{class:'field-label'}, 'Seu nome');
+  const nameInput = h('input',{class:'input', type:'text', placeholder:'Ex: João Silva', value:state.name});
+  nameInput.addEventListener('input', e=> state.name = e.target.value);
+
+  const phoneLabel = h('label',{class:'field-label'}, 'Telefone / WhatsApp');
+  const phoneInput = h('input',{class:'input', type:'tel', placeholder:'Ex: (45) 99999-0000', value:state.phone});
+  phoneInput.addEventListener('input', e=> state.phone = e.target.value);
+
+  wrap.appendChild(nameLabel); wrap.appendChild(nameInput);
+  wrap.appendChild(phoneLabel); wrap.appendChild(phoneInput);
+
+  const actions = h('div',{class:'step-actions'});
+  const back = h('button',{class:'btn-ghost', disabled:'true'}, '← Voltar');
+  const next = h('button',{class:'btn-primary'}, 'Continuar');
+  next.addEventListener('click', ()=>{
+    if(!state.name.trim() || !state.phone.trim()){
+      nameInput.style.borderColor = state.name.trim() ? var_line() : '#7A3B2E';
+      phoneInput.style.borderColor = state.phone.trim() ? var_line() : '#7A3B2E';
+      return;
+    }
+    state.step = 1;
+    render();
+  });
+  actions.appendChild(back); actions.appendChild(next);
+  wrap.appendChild(actions);
+  return wrap;
+}
+function var_line(){ return getComputedStyle(document.documentElement).getPropertyValue('--ink'); }
+
+/* --- Step 1: serviços --- */
+function renderStepServices(){
+  const wrap = h('div');
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:24px;margin-bottom:22px;'}, `${state.name.split(' ')[0]}, o que você quer fazer?`));
+
+  SERVICES.forEach(s=>{
+    const selected = state.services.includes(s.id);
+    const opt = h('div',{class:'svc-option' + (selected?' selected':'')});
+    const left = h('div',{class:'svc-left'});
+    const check = h('div',{class:'svc-check'}, h('svg',{viewBox:'0 0 24 24', fill:'none', html:'<path d="M20 6L9 17l-5-5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'}));
+    left.appendChild(check);
+    left.appendChild(h('div',{class:'svc-name'}, s.name));
+    opt.appendChild(left);
+    opt.appendChild(h('div',{class:'svc-dur'}, s.duration+' min'));
+    opt.addEventListener('click', ()=>{
+      if(state.services.includes(s.id)){
+        state.services = state.services.filter(id=>id!==s.id);
+      } else {
+        state.services.push(s.id);
+      }
+      render();
+    });
+    wrap.appendChild(opt);
+  });
+
+  if(state.services.length){
+    wrap.appendChild(h('div',{class:'svc-total'}, [h('span',{},'Tempo total'), h('span',{}, totalDuration()+' min')]));
+  }
+
+  const actions = h('div',{class:'step-actions'});
+  const back = h('button',{class:'btn-ghost'}, '← Voltar');
+  back.addEventListener('click', ()=>{ state.step=0; render(); });
+  const next = h('button',{class:'btn-primary'}, 'Continuar');
+  if(!state.services.length) next.style.opacity='0.45';
+  next.addEventListener('click', ()=>{
+    if(!state.services.length) return;
+    state.step = 2;
+    render();
+  });
+  actions.appendChild(back); actions.appendChild(next);
+  wrap.appendChild(actions);
+  return wrap;
+}
+
+/* --- Step 2: data --- */
+function renderStepDate(){
+  const wrap = h('div');
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:24px;margin-bottom:6px;'}, 'Escolha o dia'));
+  wrap.appendChild(h('div',{class:'cal-note', style:'margin-bottom:20px;'}, 'Atendemos de segunda a sábado. Domingo não abrimos.'));
+
+  const head = h('div',{class:'cal-head'});
+  const prevBtn = h('button',{class:'cal-nav-btn'}, '‹');
+  const nextBtn = h('button',{class:'cal-nav-btn'}, '›');
+  const monthLabel = h('div',{class:'cal-month'}, `${MONTH_LABELS[state.calMonth.getMonth()]} de ${state.calMonth.getFullYear()}`);
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const minMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  prevBtn.disabled = state.calMonth <= minMonth;
+  if(prevBtn.disabled) prevBtn.style.opacity = '0.3';
+  prevBtn.addEventListener('click', ()=>{
+    if(state.calMonth <= minMonth) return;
+    state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1);
+    render();
+  });
+  nextBtn.addEventListener('click', ()=>{
+    state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()+1, 1);
+    render();
+  });
+
+  head.appendChild(prevBtn); head.appendChild(monthLabel); head.appendChild(nextBtn);
+  wrap.appendChild(head);
+
+  const grid = h('div',{class:'cal-grid'});
+  DOW_LABELS.forEach(d=> grid.appendChild(h('div',{class:'cal-dow'}, d)));
+
+  const firstOfMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth(), 1);
+  const startOffset = firstOfMonth.getDay();
+  const daysInMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()+1, 0).getDate();
+
+  for(let i=0;i<startOffset;i++) grid.appendChild(h('div',{class:'cal-day empty'}));
+
+  for(let day=1; day<=daysInMonth; day++){
+    const d = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth(), day);
+    const dStr = toDateStr(d);
+    const isPast = d < today;
+    const isSunday = d.getDay() === 0;
+    const disabled = isPast || isSunday;
+    const cell = h('div',{class:'cal-day' + (disabled?' disabled':' available') + (state.date===dStr?' selected':'')}, String(day));
+    if(!disabled){
+      cell.addEventListener('click', ()=>{
+        state.date = dStr;
+        state.time = null;
+        render();
+        loadBookingsForDate(dStr).then(()=>{});
+      });
+    }
+    grid.appendChild(cell);
+  }
+  wrap.appendChild(grid);
+
+  const actions = h('div',{class:'step-actions'});
+  const back = h('button',{class:'btn-ghost'}, '← Voltar');
+  back.addEventListener('click', ()=>{ state.step=1; render(); });
+  const next = h('button',{class:'btn-primary'}, 'Continuar');
+  if(!state.date) next.style.opacity='0.45';
+  next.addEventListener('click', ()=>{
+    if(!state.date) return;
+    state.step = 3;
+    render();
+  });
+  actions.appendChild(back); actions.appendChild(next);
+  wrap.appendChild(actions);
+  return wrap;
+}
+
+/* --- Step 3: horário --- */
+function renderStepTime(){
+  const wrap = h('div');
+  const dParts = state.date.split('-');
+  const niceDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:24px;margin-bottom:4px;'}, 'Escolha o horário'));
+  wrap.appendChild(h('div',{class:'cal-note', style:'margin-bottom:20px;'}, `${niceDate} · duração total ${totalDuration()} min`));
+
+  if(state.loadingBookings){
+    wrap.appendChild(h('div',{class:'loading-msg'}, 'Carregando horários disponíveis…'));
+  } else {
+    const bookedRanges = state.bookings.map(b=>({start:b.start, end:b.end}));
+    const slots = getAvailableSlots(state.date, totalDuration(), bookedRanges);
+    const morning = slots.filter(s=>s.start < 12*60);
+    const afternoon = slots.filter(s=>s.start >= 12*60);
+
+    function renderSlotGroup(label, list){
+      if(!list.length) return;
+      wrap.appendChild(h('div',{class:'slot-period'}, label));
+      const grid = h('div',{class:'slot-grid'});
+      list.forEach(s=>{
+        const btn = h('div',{class:'slot' + (state.time===s.start?' selected':'')}, minutesToLabel(s.start));
+        btn.addEventListener('click', ()=>{ state.time = s.start; render(); });
+        grid.appendChild(btn);
+      });
+      wrap.appendChild(grid);
+    }
+
+    renderSlotGroup('Manhã', morning);
+    renderSlotGroup('Tarde', afternoon);
+
+    if(!morning.length && !afternoon.length){
+      wrap.appendChild(h('div',{class:'slot-empty'}, 'Não há horários livres nesse dia para o tempo total escolhido. Volte e selecione outra data.'));
+    }
+  }
+
+  const actions = h('div',{class:'step-actions'});
+  const back = h('button',{class:'btn-ghost'}, '← Voltar');
+  back.addEventListener('click', ()=>{ state.step=2; render(); });
+  const next = h('button',{class:'btn-primary'}, 'Continuar');
+  if(state.time===null) next.style.opacity='0.45';
+  next.addEventListener('click', ()=>{
+    if(state.time===null) return;
+    state.step = 4;
+    render();
+  });
+  actions.appendChild(back); actions.appendChild(next);
+  wrap.appendChild(actions);
+  return wrap;
+}
+
+/* --- Step 4: confirmar --- */
+function renderStepConfirm(){
+  const wrap = h('div');
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:24px;margin-bottom:22px;'}, 'Confira seu horário'));
+
+  const dParts = state.date.split('-');
+  const niceDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
+  const duration = totalDuration();
+  const endLabel = minutesToLabel(state.time + duration);
+
+  const rows = [
+    ['Nome', state.name],
+    ['Telefone', state.phone],
+    ['Serviços', state.services.map(id=>SERVICES.find(s=>s.id===id).name).join(', ')],
+    ['Data', niceDate],
+    ['Horário', `${minutesToLabel(state.time)} – ${endLabel}`],
+  ];
+  rows.forEach(([label,val])=>{
+    wrap.appendChild(h('div',{class:'confirm-row'}, [h('span',{},label), h('span',{style:'font-weight:600;'},val)]));
+  });
+
+  const actions = h('div',{class:'step-actions'});
+  const back = h('button',{class:'btn-ghost'}, '← Voltar');
+  back.addEventListener('click', ()=>{ state.step=3; render(); });
+  const next = h('button',{class:'btn-primary'}, 'Confirmar agendamento');
+  next.addEventListener('click', async ()=>{
+    next.disabled = true;
+    next.textContent = 'Confirmando…';
+    // revalidação final contra encaixe de outro cliente
+    let currentBookings = [];
+    try{
+      const res = await window.storage.get('bookings:'+state.date, true);
+      currentBookings = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){ currentBookings = []; }
+    const start = state.time, end = state.time + duration;
+    const conflict = currentBookings.some(b => start < b.end && end > b.start);
+    if(conflict){
+      alert('Esse horário acabou de ser ocupado por outra pessoa. Escolha outro, por favor.');
+      state.step = 3;
+      await loadBookingsForDate(state.date);
+      return;
+    }
+    await saveBooking(state.date, {
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
+      start, end,
+      name: state.name,
+      phone: state.phone,
+      services: state.services,
+    });
+    state.justBooked = true;
+    render();
+  });
+  actions.appendChild(back); actions.appendChild(next);
+  wrap.appendChild(actions);
+  return wrap;
+}
+
+/* --- Sucesso --- */
+function renderSuccess(){
+  const wrap = h('div');
+  wrap.appendChild(h('div',{class:'success-mark'}, h('svg',{viewBox:'0 0 24 24', fill:'none', html:'<path d="M20 6L9 17l-5-5" stroke="#F1EBDD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'})));
+  wrap.appendChild(h('h3',{class:'serif', style:'font-size:26px;margin-bottom:10px;'}, 'Horário marcado!'));
+  const dParts = state.date.split('-');
+  const niceDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
+  wrap.appendChild(h('div',{style:'color:var(--stone); margin-bottom:22px; font-size:15px;'}, `${state.name.split(' ')[0]}, te esperamos dia ${niceDate} às ${minutesToLabel(state.time)}.`));
+
+  const rows = [
+    ['Serviços', state.services.map(id=>SERVICES.find(s=>s.id===id).name).join(', ')],
+    ['Data', niceDate],
+    ['Horário', `${minutesToLabel(state.time)} – ${minutesToLabel(state.time+totalDuration())}`],
+  ];
+  rows.forEach(([label,val])=>{
+    wrap.appendChild(h('div',{class:'confirm-row'}, [h('span',{},label), h('span',{style:'font-weight:600;'},val)]));
+  });
+
+  const msg = `Novo agendamento - Miguel do Corte%0A%0ANome: ${state.name}%0ATelefone: ${state.phone}%0AServiços: ${state.services.map(id=>SERVICES.find(s=>s.id===id).name).join(', ')}%0AData: ${niceDate}%0AHorário: ${minutesToLabel(state.time)} - ${minutesToLabel(state.time+totalDuration())}`;
+  const waUrl = `https://wa.me/5545999654057?text=${msg}`;
+  const waBtn = h('a',{href:waUrl, target:'_blank', class:'btn-primary', style:'display:inline-block; text-decoration:none; margin-top:26px; margin-right:12px;'}, 'Avisar Miguel no WhatsApp');
+  wrap.appendChild(waBtn);
+  window.open(waUrl, '_blank');
+
+  const again = h('button',{class:'btn-ghost', style:'margin-top:26px;'}, 'Marcar outro horário');
+  again.addEventListener('click', ()=>{
+    state = {
+      step:0, name:'', phone:'', services:[],
+      calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      date:null, time:null, bookings:[], loadingBookings:false, justBooked:false,
+    };
+    render();
+  });
+  wrap.appendChild(again);
+  return wrap;
+}
+
+/* ---------------- CONFIGURAÇÕES DO SITE (textos, cores, imagem de fundo) ---------------- */
+const DEFAULT_SETTINGS = {
+  texts: {
+    eyebrow: 'Barbearia de bairro, corte de verdade',
+    headline: 'Seu horário marcado sem esperar na porta.',
+    sub: 'Corte, barba e sobrancelha com hora certa. Escolha o serviço, veja o horário livre no dia e pronto — sem ligação, sem fila.',
+  },
+  colors: { paper:'#F1EBDD', ink:'#1A1815', rust:'#7A3B2E', brass:'#A67C3D' },
+  bgImage: '',
+};
+let siteSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+
+async function loadSiteSettings(){
+  try{
+    const res = await window.storage.get('site:settings', true);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      siteSettings = {
+        texts: Object.assign({}, DEFAULT_SETTINGS.texts, parsed.texts||{}),
+        colors: Object.assign({}, DEFAULT_SETTINGS.colors, parsed.colors||{}),
+        bgImage: parsed.bgImage || '',
+      };
+    }
+  }catch(e){ /* mantém padrão */ }
+  applySiteSettings();
+}
+
+async function saveSiteSettings(){
+  try{
+    await window.storage.set('site:settings', JSON.stringify(siteSettings), true);
+  }catch(e){ /* falha silenciosa */ }
+  applySiteSettings();
+}
+
+function applySiteSettings(){
+  document.documentElement.style.setProperty('--paper', siteSettings.colors.paper);
+  document.documentElement.style.setProperty('--ink', siteSettings.colors.ink);
+  document.documentElement.style.setProperty('--rust', siteSettings.colors.rust);
+  document.documentElement.style.setProperty('--brass', siteSettings.colors.brass);
+
+  const eyebrowEl = document.getElementById('hero-eyebrow');
+  const titleEl = document.getElementById('hero-title');
+  const subEl = document.getElementById('hero-sub');
+  if(eyebrowEl) eyebrowEl.textContent = siteSettings.texts.eyebrow;
+  if(titleEl) titleEl.textContent = siteSettings.texts.headline;
+  if(subEl) subEl.textContent = siteSettings.texts.sub;
+
+  if(siteSettings.bgImage){
+    document.body.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.86), rgba(255,255,255,0.86)), url('${siteSettings.bgImage}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundPosition = 'center';
+  } else {
+    document.body.style.backgroundImage = 'none';
+  }
+}
+
+/* ---------------- ADMIN ---------------- */
+const ADMIN_PASSWORD = 'barbearia321';
+const WEEKDAY_FULL = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+let adminAuthed = false;
+let adminTab = 'bookings';
+
+const adminOverlay = document.getElementById('admin-overlay');
+const adminBody = document.getElementById('admin-body');
+const adminLink = document.getElementById('admin-link');
+const adminClose = document.getElementById('admin-close');
+
+adminLink.addEventListener('click', (e)=>{
+  e.preventDefault();
+  adminOverlay.style.display = 'flex';
+  renderAdmin();
+});
+adminClose.addEventListener('click', ()=>{
+  adminOverlay.style.display = 'none';
+});
+adminOverlay.addEventListener('click', (e)=>{
+  if(e.target === adminOverlay) adminOverlay.style.display = 'none';
+});
+
+function renderAdmin(){
+  adminBody.innerHTML = '';
+  if(!adminAuthed){
+    const label = h('label',{class:'field-label'}, 'Senha de administrador');
+    const input = h('input',{class:'input', type:'password', placeholder:'Digite a senha'});
+    const err = h('div',{style:'color:var(--rust); font-size:13px; margin:-12px 0 16px; display:none;'}, 'Senha incorreta.');
+    const btn = h('button',{class:'btn-primary'}, 'Entrar');
+    function tryLogin(){
+      if(input.value === ADMIN_PASSWORD){
+        adminAuthed = true;
+        renderAdmin();
+      } else {
+        err.style.display = 'block';
+      }
+    }
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryLogin(); });
+    btn.addEventListener('click', tryLogin);
+    adminBody.appendChild(label);
+    adminBody.appendChild(input);
+    adminBody.appendChild(err);
+    adminBody.appendChild(btn);
+    setTimeout(()=>input.focus(), 50);
+    return;
+  }
+
+  const tabs = h('div',{class:'admin-tabs'});
+  [['bookings','Quem marcou'],['texts','Textos'],['appearance','Aparência']].forEach(([key,label])=>{
+    const t = h('button',{class:'admin-tab' + (adminTab===key?' active':'')}, label);
+    t.addEventListener('click', ()=>{ adminTab = key; renderAdmin(); });
+    tabs.appendChild(t);
+  });
+  adminBody.appendChild(tabs);
+
+  const content = h('div',{id:'admin-content'});
+  adminBody.appendChild(content);
+
+  if(adminTab === 'bookings') renderAdminBookings(content);
+  else if(adminTab === 'texts') renderAdminTexts(content);
+  else renderAdminAppearance(content);
+}
+
+/* --- aba: quem marcou --- */
+async function renderAdminBookings(container){
+  container.innerHTML = '<div class="admin-empty">Carregando agendamentos…</div>';
+
+  let keys = [];
+  try{
+    const res = await window.storage.list('bookings:', true);
+    keys = res && res.keys ? res.keys : [];
+  }catch(e){ keys = []; }
+
+  const todayStr = toDateStr(new Date());
+  const relevantKeys = keys.filter(k => k.slice(9) >= todayStr).sort();
+
+  const allByDate = [];
+  for(const key of relevantKeys){
+    let bookings = [];
+    try{
+      const res = await window.storage.get(key, true);
+      bookings = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){ bookings = []; }
+    if(bookings.length){
+      bookings.sort((a,b)=>a.start-b.start);
+      allByDate.push({ date: key.slice(9), bookings });
+    }
+  }
+  allByDate.sort((a,b)=> a.date < b.date ? -1 : 1);
+
+  container.innerHTML = '';
+
+  if(!allByDate.length){
+    container.appendChild(h('div',{class:'admin-empty'}, 'Nenhum horário marcado a partir de hoje.'));
+    return;
+  }
+
+  allByDate.forEach(group=>{
+    const parts = group.date.split('-');
+    const d = new Date(+parts[0], +parts[1]-1, +parts[2]);
+    const niceDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    const isToday = group.date === todayStr;
+    const groupWrap = h('div',{class:'admin-date-group'});
+    groupWrap.appendChild(h('div',{class:'admin-date-heading'}, `${WEEKDAY_FULL[d.getDay()]}, ${niceDate}` + (isToday ? ' — hoje' : '')));
+
+    group.bookings.forEach(b=>{
+      const row = h('div',{class:'admin-booking'});
+      const info = h('div',{class:'admin-booking-info'}, [
+        h('strong',{}, `${minutesToLabel(b.start)} – ${minutesToLabel(b.end)}`),
+        document.createElement('br'),
+        document.createTextNode(`${b.name} · ${b.phone}`),
+        document.createElement('br'),
+        document.createTextNode(b.services.map(id=>SERVICES.find(s=>s.id===id)?.name || id).join(', ')),
+      ]);
+      const cancelBtn = h('button',{class:'admin-cancel-btn'}, 'Desmarcar');
+      cancelBtn.addEventListener('click', async ()=>{
+        if(!confirm(`Desmarcar o horário de ${b.name} às ${minutesToLabel(b.start)} (${niceDate})?`)) return;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = 'Removendo…';
+        await removeBooking(group.date, b.id);
+        renderAdminBookings(container);
+        if(state.date === group.date) loadBookingsForDate(group.date);
+      });
+      row.appendChild(info);
+      row.appendChild(cancelBtn);
+      groupWrap.appendChild(row);
+    });
+
+    container.appendChild(groupWrap);
+  });
+}
+
+async function removeBooking(dateStr, id){
+  let bookings = [];
+  try{
+    const res = await window.storage.get('bookings:'+dateStr, true);
+    bookings = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ bookings = []; }
+  bookings = bookings.filter(b => b.id !== id);
+  await window.storage.set('bookings:'+dateStr, JSON.stringify(bookings), true);
+}
+
+/* --- aba: textos --- */
+function renderAdminTexts(container){
+  const f1 = h('div',{class:'admin-field'});
+  f1.appendChild(h('label',{}, 'Frase pequena (acima do título)'));
+  const eyebrowInput = h('input',{class:'input', type:'text', value:siteSettings.texts.eyebrow, style:'margin-bottom:0;'});
+  f1.appendChild(eyebrowInput);
+
+  const f2 = h('div',{class:'admin-field'});
+  f2.appendChild(h('label',{}, 'Título principal'));
+  const titleInput = h('textarea',{}, siteSettings.texts.headline);
+  f2.appendChild(titleInput);
+
+  const f3 = h('div',{class:'admin-field'});
+  f3.appendChild(h('label',{}, 'Texto de apoio'));
+  const subInput = h('textarea',{}, siteSettings.texts.sub);
+  f3.appendChild(subInput);
+
+  const saveBtn = h('button',{class:'btn-primary'}, 'Salvar textos');
+  const msg = h('div',{class:'admin-save-msg'}, 'Textos atualizados!');
+  saveBtn.addEventListener('click', async ()=>{
+    siteSettings.texts.eyebrow = eyebrowInput.value.trim() || DEFAULT_SETTINGS.texts.eyebrow;
+    siteSettings.texts.headline = titleInput.value.trim() || DEFAULT_SETTINGS.texts.headline;
+    siteSettings.texts.sub = subInput.value.trim() || DEFAULT_SETTINGS.texts.sub;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Salvando…';
+    await saveSiteSettings();
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Salvar textos';
+    msg.style.display = 'block';
+    setTimeout(()=> msg.style.display='none', 2500);
+  });
+
+  container.appendChild(f1);
+  container.appendChild(f2);
+  container.appendChild(f3);
+  container.appendChild(saveBtn);
+  container.appendChild(msg);
+}
+
+/* --- aba: aparência (cores e imagem de fundo) --- */
+function renderAdminAppearance(container){
+  const colorDefs = [
+    ['paper', 'Fundo do site', 'Cor de fundo geral das páginas'],
+    ['ink', 'Texto e contornos', 'Cor principal dos textos e bordas'],
+    ['rust', 'Destaque (botões)', 'Cor dos botões e detalhes principais'],
+    ['brass', 'Detalhe secundário', 'Cor de apoio em pequenos detalhes'],
+  ];
+
+  const colorInputs = {};
+  colorDefs.forEach(([key,label,desc])=>{
+    const row = h('div',{class:'color-row'});
+    const left = h('div',{}, [
+      h('div',{class:'color-row-label'}, label),
+      h('div',{class:'color-row-desc'}, desc),
+    ]);
+    const swatch = h('input',{class:'color-swatch', type:'color', value:siteSettings.colors[key]});
+    colorInputs[key] = swatch;
+    row.appendChild(left);
+    row.appendChild(swatch);
+    container.appendChild(row);
+  });
+
+  const f4 = h('div',{class:'admin-field', style:'margin-top:22px;'});
+  f4.appendChild(h('label',{}, 'Imagem de fundo (link da imagem)'));
+  const imgInput = h('input',{class:'input', type:'text', placeholder:'https://exemplo.com/minha-imagem.jpg', value:siteSettings.bgImage, style:'margin-bottom:8px;'});
+  f4.appendChild(imgInput);
+  f4.appendChild(h('div',{class:'cal-note'}, 'A imagem aparece suavizada atrás do conteúdo, para o texto continuar legível. Deixe em branco para não usar imagem.'));
+  container.appendChild(f4);
+
+  const btnRow = h('div',{style:'display:flex; gap:12px; margin-top:22px; flex-wrap:wrap;'});
+  const saveBtn = h('button',{class:'btn-primary'}, 'Salvar aparência');
+  const resetBtn = h('button',{class:'btn-ghost'}, 'Restaurar padrão');
+  const msg = h('div',{class:'admin-save-msg'}, 'Aparência atualizada!');
+
+  saveBtn.addEventListener('click', async ()=>{
+    colorDefs.forEach(([key])=>{ siteSettings.colors[key] = colorInputs[key].value; });
+    siteSettings.bgImage = imgInput.value.trim();
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Salvando…';
+    await saveSiteSettings();
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Salvar aparência';
+    msg.style.display = 'block';
+    setTimeout(()=> msg.style.display='none', 2500);
+  });
+
+  resetBtn.addEventListener('click', async ()=>{
+    siteSettings.colors = Object.assign({}, DEFAULT_SETTINGS.colors);
+    siteSettings.bgImage = '';
+    await saveSiteSettings();
+    renderAdminAppearance(container);
+    adminBody.innerHTML='';
+    renderAdmin();
+  });
+
+  btnRow.appendChild(saveBtn);
+  btnRow.appendChild(resetBtn);
+  container.appendChild(btnRow);
+  container.appendChild(msg);
+}
+
+loadSiteSettings();
+render();
+</script>
+</body>
+</html>

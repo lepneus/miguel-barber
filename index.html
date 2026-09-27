@@ -39,7 +39,15 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:20px;paddi
 let SERVICES=[{id:"corte",name:"Corte",price:40,duration:30},{id:"barba",name:"Barba",price:20,duration:20},{id:"sobrancelha",name:"Sobrancelha",price:15,duration:20}];
 const WHATSAPP="5545999654057";
 const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,periods:[[480,720],[810,1140]]};
-const FIREBASE_CONFIG={}; // Cole aqui a configuração pública do seu app Web do Firebase.
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyDkaD16qxpCVTwMT35vr0tKsvBS41oQatI",
+  authDomain:"miguel-barber-bf59f.firebaseapp.com",
+  projectId:"miguel-barber-bf59f",
+  storageBucket:"miguel-barber-bf59f.firebasestorage.app",
+  messagingSenderId:"780950863075",
+  appId:"1:780950863075:web:563e16e29b02f207c099d6",
+  measurementId:"G-WL7FGT08LK"
+};
 const DEMO=new URLSearchParams(location.search).get("demo")==="1";
 const DEMO_KEY="barbearia:demo:v2";
 let settings={...DEFAULTS},periods=DEFAULTS.periods,onlineReady=false,remoteCall,bookingResult=null,avail=[],availabilityKey="",savingBooking=false;
@@ -73,7 +81,52 @@ const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled
 function whatsappUrl(){const message=["Solicitação de horário — Protótipo Barbearia","","Nome: "+state.name,"Telefone: "+state.phone,"Serviços: "+selectedServices().map(s=>s.name).join(", "),"Total: "+money(totalPrice()),"Data: "+niceDate(),"Horário: "+clock(state.time)].join("\n");return"https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message)}
 function renderFinished(){ticket.append(heading(LABELS[bookingResult?.status]||"Pedido enviado"),el("p",{class:"notice"},DEMO?"Pedido fictício salvo neste navegador. Abra o admin.html?demo=1 para testar como barbeiro.":"Seu pedido foi registrado. Use Atualizar situação para consultar a resposta do barbeiro."));if(bookingResult)ticket.append(el("p",{},niceDate(bookingResult.date)+" · "+clock(bookingResult.time)+" · "+money(bookingResult.price)));const status=el("p",{class:"error",role:"alert"});ticket.append(button("Atualizar situação",async()=>{try{bookingResult=await api("getBooking",{id:bookingResult.id});if(!bookingResult)throw Error("Pedido não encontrado.");render()}catch(e){status.textContent=e.message}}),status,actions(button("Novo agendamento",()=>{state=freshState();bookingResult=null;sessionStorage.removeItem(DEMO?"barber-demo-last":"barber-last");go(0)},true),el("a",{class:"button secondary",href:whatsappUrl(),target:"_blank",rel:"noopener"},"Falar no WhatsApp")))}
 async function restoreBooking(){try{const id=sessionStorage.getItem(DEMO?"barber-demo-last":"barber-last");if(id){const r=await api("getBooking",{id});if(r){bookingResult=r;state={...freshState(),name:r.name,phone:r.phone,date:r.date,time:r.time,services:r.services.map(s=>s.id),finished:true}}}}catch{}}
-async function boot(){if(DEMO){onlineReady=true;applySettings(await api("getPublicSettings"));modeNotice.innerHTML='<strong>Demonstração local</strong> · Dados fictícios neste navegador. <a href="'+location.pathname+'">Sair do teste</a>';await restoreBooking();render();return}if(!FIREBASE_CONFIG.apiKey||!FIREBASE_CONFIG.projectId){applySettings(DEFAULTS);modeNotice.replaceChildren(el("span",{},"Agendamento online aguardando configuração. "),el("a",{class:"button secondary",href:"?demo=1"},"Testar demonstração"),el("a",{class:"button secondary",href:"https://wa.me/"+WHATSAPP,target:"_blank",rel:"noopener"},"WhatsApp"));render();return}modeNotice.textContent="Conectando à agenda…";try{const root="https://www.gstatic.com/firebasejs/11.10.0/",[A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-functions.js")]),app=A.initializeApp(FIREBASE_CONFIG,"clientes"),auth=U.getAuth(app);await auth.authStateReady();if(!auth.currentUser)await U.signInAnonymously(auth);const funcs=F.getFunctions(app,"southamerica-east1");remoteCall=async(name,p)=>(await F.httpsCallable(funcs,name)(p)).data;onlineReady=true;applySettings(await api("getPublicSettings"));modeNotice.textContent="Agenda online · Horários de Brasília";await restoreBooking();render()}catch(e){onlineReady=false;applySettings(DEFAULTS);modeNotice.textContent="Não foi possível conectar à agenda. Confira a configuração do Firebase.";render()}}
+async function boot(){
+ if(DEMO){onlineReady=true;applySettings(await api("getPublicSettings"));modeNotice.innerHTML='<strong>Demonstração local</strong> · Dados fictícios neste navegador. <a href="'+location.pathname+'">Sair do teste</a>';await restoreBooking();render();return}
+ modeNotice.textContent="Conectando à agenda…";
+ try{
+  const root="https://www.gstatic.com/firebasejs/11.10.0/";
+  const [A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-firestore.js")]);
+  const fb=A.initializeApp(FIREBASE_CONFIG,"clientes"),auth=U.getAuth(fb),db=F.getFirestore(fb);
+  await auth.authStateReady();
+  if(!auth.currentUser)await U.signInAnonymously(auth);
+  remoteCall=async(name,p={})=>{
+   if(name==="getPublicSettings"){
+    const snap=await F.getDoc(F.doc(db,"settings","public"));
+    return snap.exists()?{...DEFAULTS,...snap.data()}:DEFAULTS;
+   }
+   if(name==="getAvailability"){
+    const cfg={services:SERVICES,periods},sel=selection(p.services,cfg);
+    const [slotSnap,blockSnap]=await Promise.all([
+     F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",p.date))),
+     F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",p.date)))
+    ]);
+    const busy=[...slotSnap.docs.map(d=>({start:d.data().minute,end:d.data().minute+10})),...blockSnap.docs.map(d=>({start:d.data().start,end:d.data().end}))];
+    return{times:slots(p.date,sel.duration,{busy},cfg)};
+   }
+   if(name==="createBooking"){
+    const user=auth.currentUser;if(!user)throw Error("Sessão do cliente não iniciada.");
+    const cfg={services:SERVICES,periods},sel=selection(p.services,cfg);
+    if(!slots(p.date,sel.duration,{busy:[]},cfg).includes(p.time))throw Error("Data ou horário inválido.");
+    const bookingRef=F.doc(db,"bookings",p.id);
+    try{const existing=await F.getDoc(bookingRef);if(existing.exists())return existing.data();}catch(e){if(e?.code!=="permission-denied")throw e;}
+    const slotSnap=await F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",p.date)));
+    const occupied=new Set(slotSnap.docs.map(d=>d.data().minute));
+    for(let t=p.time;t<p.time+sel.duration;t+=10)if(occupied.has(t))throw Error("Horário indisponível. Escolha outro.");
+    const booking={id:p.id,name:p.name,phone:p.phone,services:sel.items,date:p.date,time:p.time,end:p.time+sel.duration,price:sel.price,status:"pending",createdAt:Date.now(),ownerUid:user.uid};
+    const batch=F.writeBatch(db);batch.set(bookingRef,booking);
+    for(let t=p.time;t<booking.end;t+=10)batch.set(F.doc(db,"slots",p.date+"_"+t),{bookingId:p.id,ownerUid:user.uid,date:p.date,minute:t});
+    try{await batch.commit();}catch(e){if(e?.code==="permission-denied"||e?.code==="already-exists")throw Error("Horário indisponível. Atualize e escolha outro.");throw e;}
+    return booking;
+   }
+   if(name==="getBooking"){
+    const snap=await F.getDoc(F.doc(db,"bookings",p.id));return snap.exists()?snap.data():null;
+   }
+   throw Error("Operação inválida.");
+  };
+  onlineReady=true;applySettings(await api("getPublicSettings"));modeNotice.textContent="Agenda online · Horários de Brasília";await restoreBooking();render();
+ }catch(e){onlineReady=false;applySettings(DEFAULTS);modeNotice.textContent="Não foi possível conectar à agenda. Confira o Firebase e as regras do Firestore.";render();console.error(e)}
+}
 applySettings(DEFAULTS);render();boot();
 </script>
 </body>

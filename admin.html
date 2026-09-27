@@ -20,7 +20,16 @@
 "use strict";
 let SERVICES=[{id:"corte",name:"Corte",price:40,duration:30},{id:"barba",name:"Barba",price:20,duration:20},{id:"sobrancelha",name:"Sobrancelha",price:15,duration:20}];
 const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,periods:[[480,720],[810,1140]]};
-const FIREBASE_CONFIG={}; // Mesma configuração pública usada no index.html.
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyDkaD16qxpCVTwMT35vr0tKsvBS41oQatI",
+  authDomain:"miguel-barber-bf59f.firebaseapp.com",
+  projectId:"miguel-barber-bf59f",
+  storageBucket:"miguel-barber-bf59f.firebasestorage.app",
+  messagingSenderId:"780950863075",
+  appId:"1:780950863075:web:563e16e29b02f207c099d6",
+  measurementId:"G-WL7FGT08LK"
+};
+const ADMIN_EMAIL="prototipo@gmail.com";
 const DEMO=new URLSearchParams(location.search).get("demo")==="1",DEMO_KEY="barbearia:demo:v2";
 const app=document.getElementById("app"),mode=document.getElementById("mode");
 let settings={...DEFAULTS},periods=DEFAULTS.periods,onlineReady=false,remoteCall,adminAuth,loginRemote,logoutRemote,adminAuthed=false,records=[],blocks=[],adminError="";
@@ -50,7 +59,56 @@ async function saveSettings(candidate,status){status.textContent="Salvando…";t
 function renderServicesAdmin(){const form=el("form"),fields=[];for(const s of SERVICES){const price=formField(s.name+" · preço (R$)","price-"+s.id,"number",s.price,{min:0,max:10000,step:".01",required:true}),duration=formField("Duração (minutos)","duration-"+s.id,"number",s.duration,{min:10,max:180,step:10,required:true});fields.push({s,price,duration});form.append(el("div",{class:"filter-row"},[price.wrap,duration.wrap]))}const times=[];periods.forEach((p,i)=>{const a=formField("Período "+(i+1)+" · início","period-a-"+i,"time",clock(p[0]),{required:true,step:600}),b=formField("Fim","period-b-"+i,"time",clock(p[1]),{required:true,step:600});times.push([a,b]);form.append(el("div",{class:"filter-row"},[a.wrap,b.wrap]))});const status=el("p",{class:"note"});form.append(el("p",{class:"notice"},"Alterações valem para novos pedidos; atendimentos já marcados mantêm preço e duração."),el("button",{class:"button",type:"submit"},"Salvar serviços e horários"),status);form.onsubmit=async e=>{e.preventDefault();const ps=times.map(([a,b])=>[timeMinutes(a.input.value),timeMinutes(b.input.value)]);if(ps.some(([a,b])=>a>=b||a%10||b%10)||ps[0][1]>ps[1][0]){status.textContent="Confira os intervalos: sem sobreposição e em múltiplos de 10 minutos.";return}await saveSettings({...settings,services:fields.map(({s,price,duration})=>({...s,price:Number(price.input.value),duration:Number(duration.input.value)})),periods:ps},status)};app.append(form)}
 function renderTexts(){const form=el("form"),fields={};for(const[k,l]of[["eyebrow","Frase acima do título"],["title","Título principal"],["sub","Texto de apoio"]]){const input=el("textarea",{id:"edit-"+k,maxlength:k==="sub"?600:180},settings[k]);fields[k]=input;form.append(el("div",{class:"field"},[el("label",{for:"edit-"+k},l),input]))}const status=el("p",{class:"note"});form.append(el("button",{type:"submit",class:"button"},"Salvar textos"),status);form.onsubmit=e=>{e.preventDefault();const candidate={...settings};for(const k of Object.keys(fields))candidate[k]=fields[k].value.trim()||DEFAULTS[k];saveSettings(candidate,status)};app.append(form)}
 function renderAppearance(){const form=el("form"),colors={};for(const[k,l]of[["paper","Fundo do site"],["ink","Textos"],["accent","Botões e destaques"],["detail","Detalhes"]]){const input=el("input",{type:"color",id:"color-"+k,value:settings[k]});colors[k]=input;form.append(el("div",{class:"color-field"},[el("label",{for:"color-"+k},l),input]))}const image=formField("Imagem de fundo (link HTTPS)","background-image","url",settings.bgImage,{placeholder:"https://exemplo.com/imagem.jpg"}),status=el("p",{class:"note"}),save=el("button",{type:"submit",class:"button"},"Salvar aparência");form.append(image.wrap,save,status);form.onsubmit=e=>{e.preventDefault();const bg=image.input.value.trim();if(bg){try{if(new URL(bg).protocol!=="https:")throw 0}catch{status.textContent="Use um link HTTPS válido.";return}}const candidate={...settings,bgImage:bg};for(const k of Object.keys(colors))candidate[k]=colors[k].value;saveSettings(candidate,status)};app.append(form)}
-async function boot(){if(DEMO){onlineReady=true;adminAuthed=false;applySettings({...DEFAULTS,...localData().settings});mode.innerHTML='<strong>Demonstração local</strong> · Os dados são compartilhados com <code>index.html?demo=1</code> neste mesmo navegador.';renderLogin();return}if(!FIREBASE_CONFIG.apiKey||!FIREBASE_CONFIG.projectId){mode.textContent="Firebase ainda não configurado. Você pode testar o painel em modo demonstração.";renderLogin();return}mode.textContent="Conectando ao Firebase…";try{const root="https://www.gstatic.com/firebasejs/11.10.0/",[A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-functions.js")]),fb=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fb),funcs=F.getFunctions(fb,"southamerica-east1");adminAuth=auth;remoteCall=async(name,p)=>(await F.httpsCallable(funcs,name)(p)).data;loginRemote=(email,password)=>U.signInWithEmailAndPassword(auth,email,password);logoutRemote=()=>U.signOut(auth);onlineReady=true;applySettings(await remoteCall("getPublicSettings",{}));mode.textContent="Painel online · conectado ao Firebase";renderLogin()}catch(e){onlineReady=false;mode.textContent="Não foi possível conectar ao Firebase. Confira a configuração.";renderLogin()}}
+async function boot(){
+ if(DEMO){onlineReady=true;adminAuthed=false;applySettings({...DEFAULTS,...localData().settings});mode.innerHTML='<strong>Demonstração local</strong> · Os dados são compartilhados com <code>index.html?demo=1</code> neste mesmo navegador.';renderLogin();return}
+ mode.textContent="Conectando ao Firebase…";
+ try{
+  const root="https://www.gstatic.com/firebasejs/11.10.0/";
+  const [A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-firestore.js")]);
+  const fb=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fb),db=F.getFirestore(fb);adminAuth=auth;
+  const nextMonthStart=m=>{const[y,mo]=m.split("-").map(Number),d=new Date(Date.UTC(y,mo,1));return d.toISOString().slice(0,7)+"-01"};
+  remoteCall=async(name,p={})=>{
+   if(name==="getPublicSettings"){
+    const snap=await F.getDoc(F.doc(db,"settings","public"));return snap.exists()?{...DEFAULTS,...snap.data()}:DEFAULTS;
+   }
+   if(!auth.currentUser||auth.currentUser.email!==ADMIN_EMAIL)throw Error("Conta sem acesso ao painel.");
+   if(name==="adminData"){
+    const start=p.month+"-01",end=nextMonthStart(p.month);
+    const [rs,bs]=await Promise.all([
+     F.getDocs(F.query(F.collection(db,"bookings"),F.where("date",">=",start),F.where("date","<",end))),
+     F.getDocs(F.query(F.collection(db,"blocks"),F.where("date",">=",start),F.where("date","<",end)))
+    ]);
+    return{records:rs.docs.map(d=>({id:d.id,...d.data()})),blocks:bs.docs.map(d=>({id:d.id,...d.data()}))};
+   }
+   if(name==="updateBooking"){
+    const ref=F.doc(db,"bookings",p.id),snap=await F.getDoc(ref);if(!snap.exists())throw Error("Pedido não encontrado.");
+    const r={id:snap.id,...snap.data()},change=transition(r,p.action,p.amount,p.method),batch=F.writeBatch(db);
+    batch.update(ref,{...change,...(p.action==="complete"?{completedAt:Date.now(),paidDate:brazilNow().date}:{})});
+    if(p.action==="cancel"){
+     const ss=await F.getDocs(F.query(F.collection(db,"slots"),F.where("bookingId","==",p.id)));for(const d of ss.docs)batch.delete(d.ref);
+    }
+    await batch.commit();return{id:p.id,...r,...change};
+   }
+   if(name==="setBlock"){
+    if(p.remove){await F.deleteDoc(F.doc(db,"blocks",p.remove));return{ok:true}}
+    if(p.start>=p.end)throw Error("O fim deve ser depois do início.");
+    const [ss,bs]=await Promise.all([
+     F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",p.date))),
+     F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",p.date)))
+    ]);
+    const busy=[...ss.docs.map(d=>({start:d.data().minute,end:d.data().minute+10})),...bs.docs.map(d=>({start:d.data().start,end:d.data().end}))];
+    if(busy.some(b=>p.start<b.end&&p.end>b.start))throw Error("Existe reserva ou bloqueio nesse intervalo.");
+    const id="block_"+crypto.randomUUID();await F.setDoc(F.doc(db,"blocks",id),{date:p.date,start:p.start,end:p.end,label:p.label||"",createdAt:Date.now()});return{ok:true};
+   }
+   if(name==="savePublicSettings"){
+    await F.setDoc(F.doc(db,"settings","public"),p,{merge:true});const snap=await F.getDoc(F.doc(db,"settings","public"));return{...DEFAULTS,...snap.data()};
+   }
+   throw Error("Operação inválida.");
+  };
+  loginRemote=async(email,password)=>{const cred=await U.signInWithEmailAndPassword(auth,email,password);if(cred.user.email!==ADMIN_EMAIL){await U.signOut(auth);throw Error("Essa conta não tem acesso ao painel.")}return cred};
+  logoutRemote=()=>U.signOut(auth);onlineReady=true;applySettings(await remoteCall("getPublicSettings",{}));mode.textContent="Painel online · conectado ao Firebase";renderLogin();
+ }catch(e){onlineReady=false;mode.textContent="Não foi possível conectar ao Firebase. Confira a configuração e as regras do Firestore.";renderLogin();console.error(e)}
+}
 applySettings(DEFAULTS);boot();
 </script>
 </body>

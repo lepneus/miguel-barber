@@ -42,6 +42,45 @@
 @media(max-width:700px){.workdays{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:420px){.workdays{grid-template-columns:repeat(2,1fr)}}
 
+
+.day-schedule-tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0 18px}
+.day-schedule-tab{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 7px;min-height:58px;font-weight:600}
+.day-schedule-tab.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,white)}
+.day-schedule-tab small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:5px}
+.day-schedule-editor{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff}
+.day-schedule-editor h4{font-family:Fraunces,Georgia,serif;font-size:24px;margin:0 0 6px}
+.day-open-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.day-open-row input{width:auto;transform:scale(1.2)}
+.period-card{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:var(--paper)}
+.period-card .filter-row{margin:0}
+.period-card .button{margin-bottom:19px}
+@media(max-width:760px){.day-schedule-tabs{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:440px){.day-schedule-tabs{grid-template-columns:repeat(2,1fr)}}
+
+
+.edit-box{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.service-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 16px}.service-check{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}.service-check input{width:auto}.danger{border-color:#c97d7d!important;color:#8a3333!important}.block-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}.block-box{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff}.block-box h3{margin:0 0 6px;font-size:22px}.daily-metrics{grid-template-columns:repeat(3,1fr)!important}.payment-note{font-weight:600}.record-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+.booking-alerts{margin:18px 0 22px}
+.booking-alerts-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.booking-alerts-head h2{font-size:24px}
+.booking-alert-count{min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.booking-alert-card{border:1px solid var(--line);background:#fff;border-radius:16px;padding:15px;margin:10px 0}
+.booking-alert-card.new{border-color:var(--accent)}
+.booking-alert-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.booking-alert-title{font-weight:700;font-size:15px}
+.booking-alert-meta{font-size:13px;color:var(--muted);line-height:1.6;margin-top:5px}
+.booking-alert-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.booking-alert-actions .button{padding:9px 12px}
+.booking-toast-stack{position:fixed;right:18px;top:18px;z-index:9999;width:min(390px,calc(100vw - 36px));display:grid;gap:10px}
+.booking-toast{background:#fff;border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:16px;padding:15px;box-shadow:0 18px 48px #0002}
+.booking-toast-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.booking-toast-close{border:0;background:transparent;font-size:22px;line-height:1;padding:0 4px}
+.booking-toast .booking-alert-actions{margin-top:10px}
+@media(max-width:600px){.booking-toast-stack{right:10px;top:10px;width:calc(100vw - 20px)}}
+
+@media(max-width:800px){.block-grid{grid-template-columns:1fr}.daily-metrics{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:520px){.service-checks{grid-template-columns:1fr}.daily-metrics{grid-template-columns:1fr 1fr!important}}
+
 @media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.panel-head{flex-direction:column}.topbar{align-items:flex-start}.card{padding:19px}}
 @media(max-width:480px){.metric{padding:13px}.metric strong{font-size:21px}.record{padding:14px}.tabs{margin-left:-4px;margin-right:-4px}.topbar{flex-wrap:wrap}}
 @media print{body>*{display:none!important}body>#print-report{display:block!important;background:#fff;color:#000;padding:20px}#print-report h1{font-size:28px}#print-report p{border-bottom:1px solid #ddd;padding-bottom:8px}}
@@ -52,7 +91,8 @@
 <script>
 "use strict";
 let SERVICES=[{id:"corte",name:"Corte",price:40,duration:30},{id:"barba",name:"Barba",price:20,duration:20},{id:"sobrancelha",name:"Sobrancelha",price:15,duration:20}];
-const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,workingDays:[1,2,3,4,5,6],periods:[[480,720],[810,1140]]};
+const DEFAULT_WORKING_HOURS={"0":[],"1":[[480,720],[810,1140]],"2":[[480,720],[810,1140]],"3":[[480,720],[810,1140]],"4":[[480,720],[810,1140]],"5":[[480,720],[810,1140]],"6":[[480,720],[810,1140]]};
+const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,workingHours:DEFAULT_WORKING_HOURS,workingDays:[1,2,3,4,5,6],periods:[[480,720],[810,1140]]};
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyDkaDl6pxcPVIwMT35yr0tKsvBS4loOatI",
   authDomain:"miguel-barber-bf59f.firebaseapp.com",
@@ -65,183 +105,332 @@ const FIREBASE_CONFIG={
 const ADMIN_EMAIL="prototipo@gmail.com";
 const DEMO=new URLSearchParams(location.search).get("demo")==="1",DEMO_KEY="barbearia:demo:v2";
 const app=document.getElementById("app"),mode=document.getElementById("mode");
-let settings={...DEFAULTS},workingDays=[...DEFAULTS.workingDays],periods=DEFAULTS.periods,onlineReady=false,remoteCall,adminAuth,loginRemote,logoutRemote,adminAuthed=false,records=[],blocks=[],adminError="";
+let settings={...DEFAULTS},workingHours=structuredClone(DEFAULT_WORKING_HOURS),workingDays=[...DEFAULTS.workingDays],periods=DEFAULTS.periods,onlineReady=false,remoteCall,adminAuth,loginRemote,logoutRemote,adminAuthed=false,records=[],blocks=[],adminError="";
+let livePending=[],bookingAlertsHost=null,realtimeUnsubscribe=null,realtimeExpiryTimer=null,startRealtimeNotifications=null,stopRealtimeNotifications=null,knownPendingIds=new Set();
 let adminTab="overview",adminMonth=brazilNow().date.slice(0,7),adminDate=brazilNow().date,agendaFilter="all",clientSearch="";
-const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled:"Cancelado",completed:"Concluído",expired:"Expirado"};
+const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled:"Cancelado",completed:"Concluído",expired:"Expirado",no_show:"Faltou"};
 const PENDING_TTL=60*60*1000;
 function bookingExpiry(r){return Number(r?.expiresAt)||(Number(r?.createdAt)||0)+PENDING_TTL}
 function effectiveStatus(r){return r?.status==="pending"&&bookingExpiry(r)&&Date.now()>=bookingExpiry(r)?"expired":r?.status}
 function normalizeRecord(r){const status=effectiveStatus(r);return status===r.status?r:{...r,status}}
 function money(n){return new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n)}function pad(n){return String(n).padStart(2,"0")}function clock(n){return pad(Math.floor(n/60))+":"+pad(n%60)}function fmtDate(d){return d?.split("-").reverse().join("/")||""}function brazilNow(){const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));return{date:`${p.year}-${p.month}-${p.day}`,minute:+p.hour*60 + +p.minute}}
 function validDate(date){if(typeof date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(date))return false;const d=new Date(date+"T12:00:00Z");return Number.isFinite(+d)&&d.toISOString().slice(0,10)===date}
+function normalizeWorkingHours(cfg={}){
+ const source=cfg.workingHours;
+ if(source&&typeof source==="object"){
+  const out={};for(let d=0;d<7;d++)out[String(d)]=Array.isArray(source[String(d)])?source[String(d)].map(p=>[Number(p[0]),Number(p[1])]).filter(p=>Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[0]<p[1]):[];
+  return out;
+ }
+ const days=Array.isArray(cfg.workingDays)?cfg.workingDays.map(Number):DEFAULTS.workingDays,ps=Array.isArray(cfg.periods)?cfg.periods:DEFAULTS.periods;
+ const out={};for(let d=0;d<7;d++)out[String(d)]=days.includes(d)?ps.map(p=>[Number(p[0]),Number(p[1])]):[];return out;
+}
+function serviceSelection(ids){
+ if(!Array.isArray(ids)||!ids.length)throw Error("Selecione pelo menos um serviço.");
+ const items=ids.map(id=>SERVICES.find(s=>s.id===id));
+ if(items.some(x=>!x))throw Error("Um dos serviços não existe mais.");
+ return{items,duration:items.reduce((n,s)=>n+Number(s.duration||0),0),price:items.reduce((n,s)=>n+Number(s.price||0),0)};
+}
+function scheduleAllows(date,start,duration){
+ if(!validDate(date)||!Number.isInteger(start)||!Number.isFinite(duration)||duration<=0)return false;
+ const dow=new Date(date+"T12:00:00Z").getUTCDay(),ps=workingHours[String(dow)]||[];
+ return ps.some(([a,b])=>start>=a&&start+duration<=b);
+}
+function dateRange(start,end,maxDays=90){
+ if(!validDate(start)||!validDate(end)||end<start)throw Error("Confira o período de datas.");
+ const out=[],a=new Date(start+"T12:00:00Z"),b=new Date(end+"T12:00:00Z");
+ for(let d=new Date(a);d<=b;d.setUTCDate(d.getUTCDate()+1)){if(out.length>=maxDays)throw Error("Escolha no máximo "+maxDays+" dias por vez.");out.push(d.toISOString().slice(0,10))}
+ return out;
+}
 function localData(){try{return JSON.parse(localStorage.getItem(DEMO_KEY)||"null")||{records:[],blocks:[],settings:{}}}catch{return{records:[],blocks:[],settings:{}}}}function saveLocal(d){localStorage.setItem(DEMO_KEY,JSON.stringify(d))}
-function transition(record,action,amount,method){const status=effectiveStatus(record);if(action==="accept"&&status==="pending")return{status:"accepted",acceptedAt:Date.now()};if(action==="cancel"&&["pending","accepted"].includes(status))return{status:"cancelled"};if(action==="complete"&&status==="accepted"){if(!Number.isFinite(amount)||amount<0||amount>10000||!["Pix","Dinheiro","Débito","Crédito"].includes(method))throw Error("Informe valor e pagamento válidos.");return{status:"completed",paidCents:Math.round(amount*100),method}}if(status==="expired")throw Error("A reserva expirou após 1 hora e o horário já foi liberado.");throw Error("Esse atendimento já mudou de situação.")}
+function transition(record,action,amount,method){
+ const status=effectiveStatus(record);
+ if(action==="accept"&&status==="pending")return{status:"accepted",acceptedAt:Date.now()};
+ if(action==="cancel"&&["pending","accepted","completed","no_show"].includes(status))return{status:"cancelled",cancelledAt:Date.now(),paidCents:null,method:null,paidDate:null,completedAt:null,noShowAt:null};
+ if(action==="complete"&&status==="accepted"){
+  if(!Number.isFinite(amount)||amount<0||amount>10000||!["Pix","Dinheiro","Débito","Crédito"].includes(method))throw Error("Informe valor e pagamento válidos.");
+  return{status:"completed",paidCents:Math.round(amount*100),method};
+ }
+ if(action==="noShow"&&status==="accepted")return{status:"no_show",noShowAt:Date.now()};
+ if(status==="expired")throw Error("A reserva expirou após 1 hora e o horário já foi liberado.");
+ throw Error("Esse atendimento já mudou de situação.");
+}
 function demoDay(d,date){return{busy:[...d.records.filter(r=>r.date===date&&!(["cancelled","expired"].includes(effectiveStatus(r)))).map(r=>({start:r.time,end:r.end,id:r.id})),...d.blocks.filter(b=>b.date===date)]}}
-async function api(name,p={}){if(!DEMO){if(!onlineReady)throw Error("Conexão online ainda não configurada.");return remoteCall(name,p)}const d=localData(),cfg={...DEFAULTS,...d.settings};if(name==="getPublicSettings")return cfg;if(!adminAuthed)throw Error("Entre no painel.");if(name==="adminData")return{records:d.records.filter(r=>r.date.startsWith(p.month)).map(normalizeRecord),blocks:d.blocks.filter(r=>r.date.startsWith(p.month))};if(name==="updateBooking"){const r=d.records.find(r=>r.id===p.id);if(!r)throw Error("Pedido não encontrado.");if(p.action==="verifyPhone"){if(effectiveStatus(r)!=="pending")throw Error(effectiveStatus(r)==="expired"?"A reserva já expirou.":"Esse pedido não está mais pendente.");r.phoneVerified=true;r.phoneVerifiedAt=Date.now();saveLocal(d);return r}Object.assign(r,transition(r,p.action,p.amount,p.method));if(p.action==="complete"){r.completedAt=Date.now();r.paidDate=brazilNow().date}saveLocal(d);return r}if(name==="setBlock"){if(p.remove)d.blocks=d.blocks.filter(b=>!(b.date===p.date&&b.id===p.remove));else{if(p.start>=p.end)throw Error("O fim deve ser depois do início.");if(demoDay(d,p.date).busy.some(b=>p.start<b.end&&p.end>b.start))throw Error("Existe reserva ou bloqueio nesse intervalo.");d.blocks.push({...p,id:"block_"+Date.now(),block:true})}saveLocal(d);return{ok:true}}if(name==="savePublicSettings"){d.settings={...d.settings,...p};saveLocal(d);return{...cfg,...d.settings}}throw Error("Operação inválida.")}
+async function api(name,p={}){
+ if(!DEMO){if(!onlineReady)throw Error("Conexão online ainda não configurada.");return remoteCall(name,p)}
+ const d=localData(),cfg={...DEFAULTS,...d.settings};
+ if(name==="getPublicSettings")return cfg;
+ if(!adminAuthed)throw Error("Entre no painel.");
+ if(name==="adminData")return{records:d.records.filter(r=>r.date.startsWith(p.month)).map(normalizeRecord),blocks:d.blocks.filter(r=>r.date.startsWith(p.month))};
+ if(name==="updateBooking"){
+  const r=d.records.find(r=>r.id===p.id);if(!r)throw Error("Pedido não encontrado.");
+  const current=effectiveStatus(r);
+  if(p.action==="verifyPhone"){
+   if(current!=="pending")throw Error(current==="expired"?"A reserva já expirou.":"Esse pedido não está mais pendente.");
+   r.phoneVerified=true;r.phoneVerifiedAt=Date.now();saveLocal(d);return r;
+  }
+  if(p.action==="editPayment"){
+   if(current!=="completed")throw Error("Somente atendimento concluído pode ter o pagamento editado.");
+   const amount=Number(p.amount);if(!Number.isFinite(amount)||amount<0||amount>10000||!["Pix","Dinheiro","Débito","Crédito"].includes(p.method))throw Error("Informe valor e pagamento válidos.");
+   r.paidCents=Math.round(amount*100);r.method=p.method;r.paymentEditedAt=Date.now();saveLocal(d);return r;
+  }
+  if(p.action==="edit"){
+   if(!["pending","accepted"].includes(current))throw Error("Só é possível editar um agendamento pendente ou confirmado.");
+   const sel=serviceSelection(p.serviceIds),price=Number(p.price),date=p.date,time=Number(p.time);
+   if(!Number.isFinite(price)||price<0||price>10000)throw Error("Informe um valor válido.");
+   if(!scheduleAllows(date,time,sel.duration))throw Error("Esse horário está fora do expediente configurado.");
+   const busyRecords=d.records.filter(x=>x.id!==r.id&&x.date===date&&!['cancelled','expired','no_show'].includes(effectiveStatus(x))).map(x=>({start:x.time,end:x.end}));
+   const busyBlocks=d.blocks.filter(x=>x.date===date&&x.bookingId!==r.id).map(x=>({start:x.start,end:x.end}));
+   if([...busyRecords,...busyBlocks].some(b=>time<b.end&&time+sel.duration>b.start))throw Error("Esse horário já está ocupado.");
+   Object.assign(r,{date,time,end:time+sel.duration,services:sel.items,price,editedAt:Date.now()});saveLocal(d);return r;
+  }
+  Object.assign(r,transition(r,p.action,p.amount,p.method));
+  if(p.action==="complete"){r.completedAt=Date.now();r.paidDate=brazilNow().date}
+  saveLocal(d);return r;
+ }
+ if(name==="setBlock"){
+  if(p.remove){d.blocks=d.blocks.filter(b=>!(b.date===p.date&&b.id===p.remove));saveLocal(d);return{ok:true}}
+  if(p.start>=p.end)throw Error("O fim deve ser depois do início.");
+  if(demoDay(d,p.date).busy.some(b=>p.start<b.end&&p.end>b.start))throw Error("Existe reserva ou bloqueio nesse intervalo.");
+  d.blocks.push({...p,id:"block_"+Date.now()+"_"+Math.random().toString(36).slice(2),block:true});saveLocal(d);return{ok:true};
+ }
+ if(name==="setBlockRange"){
+  const dates=dateRange(p.startDate,p.endDate),start=Number(p.start),end=Number(p.end);if(start>=end)throw Error("Confira o horário do bloqueio.");
+  for(const date of dates)if(demoDay(d,date).busy.some(b=>start<b.end&&end>b.start))throw Error("Existe atendimento ou bloqueio em "+fmtDate(date)+". Ajuste esse dia primeiro.");
+  for(const date of dates)d.blocks.push({id:"range_"+Date.now()+"_"+Math.random().toString(36).slice(2),date,start,end,label:p.label||"Folga / férias",range:true,createdAt:Date.now()});
+  saveLocal(d);return{ok:true,count:dates.length};
+ }
+ if(name==="savePublicSettings"){d.settings={...d.settings,...p};saveLocal(d);return{...cfg,...d.settings}}
+ throw Error("Operação inválida.");
+}
 function el(tag,attrs={},children=[]){const node=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")node.className=v;else if(k.startsWith("on"))node.addEventListener(k.slice(2),v);else if(v!==false&&v!=null)node.setAttribute(k,v===true?"":String(v))}for(const child of[].concat(children))if(child!=null)node.append(child instanceof Node?child:document.createTextNode(String(child)));return node}function button(text,fn,secondary=false){return el("button",{type:"button",class:secondary?"button secondary":"button",onclick:fn},text)}function formField(label,id,type,value,attrs={}){const input=el("input",{id,type,value,...attrs});return{input,wrap:el("div",{class:"field"},[el("label",{for:id},label),input])}}function selectField(label,id,choices,value){const input=el("select",{id});for(const[v,t]of choices)input.append(el("option",{value:v,selected:v===value},t));return{input,wrap:el("div",{class:"field"},[el("label",{for:id},label),input])}}
-function applySettings(c){settings={...DEFAULTS,...c};SERVICES=[...(settings.services||DEFAULTS.services)];workingDays=Array.isArray(settings.workingDays)?settings.workingDays.map(Number):[...DEFAULTS.workingDays];periods=settings.periods||DEFAULTS.periods;for(const name of["paper","ink","accent","detail"])document.documentElement.style.setProperty("--"+name,settings[name])}
-async function refreshAdmin(){const data=await api("adminData",{month:adminMonth});records=(data.records||[]).map(normalizeRecord).sort((a,b)=>(a.date+clock(a.time)).localeCompare(b.date+clock(b.time)));blocks=data.blocks||[]}
+function applySettings(c){settings={...DEFAULTS,...c};SERVICES=[...(settings.services||DEFAULTS.services)];workingHours=normalizeWorkingHours(settings);workingDays=Object.keys(workingHours).map(Number).filter(d=>(workingHours[String(d)]||[]).length);periods=settings.periods||DEFAULTS.periods;for(const name of["paper","ink","accent","detail"])document.documentElement.style.setProperty("--"+name,settings[name])}
+
+function pendingTimeLeft(r){
+ const ms=bookingExpiry(r)-Date.now();
+ if(ms<=0)return"expirado";
+ const min=Math.max(1,Math.ceil(ms/60000));
+ return min>=60?"até 1h":min+" min";
+}
+function pendingServices(r){return(r.services||[]).map(x=>x.name).join(" + ")||"Serviço"}
+function dismissBookingToast(id){document.querySelector('[data-booking-toast="'+CSS.escape(id)+'"]')?.remove()}
+async function bookingAlertAction(r,action){
+ if(action==="accept"&&!r.phoneVerified){
+  if(!confirm("O WhatsApp deste cliente ainda não foi marcado como verificado. Aceitar mesmo assim?"))return;
+ }
+ if(action==="cancel"&&!confirm("Cancelar este agendamento e liberar o horário?"))return;
+ dismissBookingToast(r.id);
+ livePending=livePending.filter(x=>x.id!==r.id);
+ renderBookingAlerts();
+ await runAdmin(()=>api("updateBooking",{id:r.id,action}));
+}
+function bookingAlertCard(r,isNew=false){
+ const card=el("article",{class:"booking-alert-card"+(isNew?" new":"")});
+ const top=el("div",{class:"booking-alert-top"},[
+  el("div",{},[
+   el("div",{class:"booking-alert-title"},clock(r.time)+" · "+r.name),
+   el("div",{class:"booking-alert-meta"},[
+    fmtDate(r.date)+" · "+pendingServices(r)+" · "+money(r.price||0),
+    el("br"),
+    r.phone+" · "+(r.phoneVerified?"WhatsApp verificado":"WhatsApp pendente")+" · expira em "+pendingTimeLeft(r)
+   ])
+  ]),
+  el("span",{class:"badge pending"},"Novo agendamento")
+ ]);
+ const actions=el("div",{class:"booking-alert-actions"},[
+  button("Aceitar",()=>bookingAlertAction(r,"accept")),
+  button("Cancelar",()=>bookingAlertAction(r,"cancel"),true)
+ ]);
+ card.append(top,actions);
+ return card;
+}
+function renderBookingAlerts(){
+ if(!bookingAlertsHost||!bookingAlertsHost.isConnected)return;
+ bookingAlertsHost.replaceChildren();
+ const items=livePending.filter(r=>effectiveStatus(r)==="pending").sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ const head=el("div",{class:"booking-alerts-head"},[
+  el("h2",{},"Notificações de agendamento"),
+  el("span",{class:"booking-alert-count"},items.length)
+ ]);
+ bookingAlertsHost.append(head);
+ if(!items.length){
+  bookingAlertsHost.append(el("p",{class:"notice"},"Nenhum agendamento novo aguardando decisão."));
+  return;
+ }
+ for(const r of items.slice(0,8))bookingAlertsHost.append(bookingAlertCard(r));
+ if(items.length>8)bookingAlertsHost.append(el("p",{class:"note"},"+"+(items.length-8)+" agendamentos pendentes. Veja a Agenda para todos."));
+}
+function showBookingToast(r){
+ let stack=document.getElementById("booking-toast-stack");
+ if(!stack){
+  stack=el("div",{id:"booking-toast-stack",class:"booking-toast-stack","aria-live":"polite"});
+  document.body.append(stack);
+ }
+ if(stack.querySelector('[data-booking-toast="'+CSS.escape(r.id)+'"]'))return;
+ const toast=el("article",{class:"booking-toast","data-booking-toast":r.id});
+ const head=el("div",{class:"booking-toast-head"},[
+  el("div",{},[
+   el("strong",{},"Novo agendamento"),
+   el("div",{class:"booking-alert-meta"},clock(r.time)+" · "+r.name+" · "+fmtDate(r.date))
+  ]),
+  el("button",{type:"button",class:"booking-toast-close","aria-label":"Fechar",onclick:()=>toast.remove()},"×")
+ ]);
+ const detail=el("div",{class:"booking-alert-meta"},pendingServices(r)+" · "+money(r.price||0)+" · "+r.phone);
+ const actions=el("div",{class:"booking-alert-actions"},[
+  button("Aceitar",()=>bookingAlertAction(r,"accept")),
+  button("Cancelar",()=>bookingAlertAction(r,"cancel"),true)
+ ]);
+ toast.append(head,detail,actions);
+ stack.prepend(toast);
+}
+
+async function refreshAdmin(){
+ const data=await api("adminData",{month:adminMonth});
+ records=(data.records||[]).map(normalizeRecord).sort((a,b)=>(a.date+clock(a.time)).localeCompare(b.date+clock(b.time)));
+ blocks=data.blocks||[];
+ if(DEMO){
+  livePending=records.filter(r=>effectiveStatus(r)==="pending");
+  renderBookingAlerts();
+ }
+}
 async function runAdmin(work){try{await work();await refreshAdmin();adminError="";renderAdmin()}catch(e){adminError=e?.message||"Não foi possível concluir.";renderAdmin()}}
-function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
-function renderAdmin(){if(!adminAuthed)return renderLogin();app.replaceChildren();const head=el("div",{class:"panel-head"},[el("div",{},[el("p",{class:"note"},DEMO?"Modo de demonstração":"Painel conectado"),el("h1",{},"Controle da barbearia")]),button("Sair",async()=>{if(!DEMO&&logoutRemote)await logoutRemote();adminAuthed=false;records=[];blocks=[];renderLogin()},true)]);app.append(head);const tabs=el("div",{class:"tabs"});for(const[k,l]of[["overview","Resumo"],["agenda","Agenda"],["cash","Caixa"],["clients","Clientes"],["blocks","Bloqueios"],["services","Serviços e horários"],["texts","Textos"],["appearance","Aparência"]])tabs.append(el("button",{type:"button",class:"tab"+(adminTab===k?" active":""),onclick:()=>{adminTab=k;renderAdmin()}},l));app.append(tabs);if(adminError)app.append(el("p",{class:"error"},adminError));if(["overview","cash","clients","blocks"].includes(adminTab)){const month=formField("Mês consultado","admin-month","month",adminMonth);month.input.onchange=()=>{if(!/^\d{4}-\d{2}$/.test(month.input.value))return;adminMonth=month.input.value;if(!adminDate.startsWith(adminMonth))adminDate=adminMonth+"-01";runAdmin(async()=>{})};app.append(el("div",{class:"filter-row"},[month.wrap,button("Atualizar",()=>runAdmin(async()=>{}),true)]))}if(adminTab==="agenda")return renderAgenda();if(adminTab==="cash")return renderCash(false);if(adminTab==="clients")return renderClients();if(adminTab==="blocks")return renderBlocks();if(adminTab==="services")return renderServicesAdmin();if(adminTab==="texts")return renderTexts();if(adminTab==="appearance")return renderAppearance();renderCash(true)}
+function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();if(startRealtimeNotifications)startRealtimeNotifications();renderAdmin()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";if(stopRealtimeNotifications)stopRealtimeNotifications();await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
+function renderAdmin(){if(!adminAuthed)return renderLogin();app.replaceChildren();const head=el("div",{class:"panel-head"},[
+ el("div",{},[el("p",{class:"note"},DEMO?"Modo de demonstração":"Painel conectado"),el("h1",{},"Controle da barbearia")]),
+ button("Sair",async()=>{
+  if(stopRealtimeNotifications)stopRealtimeNotifications();
+  if(!DEMO&&logoutRemote)await logoutRemote();
+  adminAuthed=false;records=[];blocks=[];livePending=[];renderLogin()
+ },true)
+]);
+app.append(head);
+bookingAlertsHost=el("section",{id:"booking-alerts",class:"booking-alerts"});
+app.append(bookingAlertsHost);
+renderBookingAlerts();const tabs=el("div",{class:"tabs"});for(const[k,l]of[["overview","Resumo"],["agenda","Agenda"],["cash","Caixa"],["clients","Clientes"],["blocks","Bloqueios"],["services","Serviços e horários"],["texts","Textos"],["appearance","Aparência"]])tabs.append(el("button",{type:"button",class:"tab"+(adminTab===k?" active":""),onclick:()=>{adminTab=k;renderAdmin()}},l));app.append(tabs);if(adminError)app.append(el("p",{class:"error"},adminError));if(["overview","cash","clients","blocks"].includes(adminTab)){const month=formField("Mês consultado","admin-month","month",adminMonth);month.input.onchange=()=>{if(!/^\d{4}-\d{2}$/.test(month.input.value))return;adminMonth=month.input.value;if(!adminDate.startsWith(adminMonth))adminDate=adminMonth+"-01";runAdmin(async()=>{})};app.append(el("div",{class:"filter-row"},[month.wrap,button("Atualizar",()=>runAdmin(async()=>{}),true)]))}if(adminTab==="agenda")return renderAgenda();if(adminTab==="cash")return renderCash(false);if(adminTab==="clients")return renderClients();if(adminTab==="blocks")return renderBlocks();if(adminTab==="services")return renderServicesAdmin();if(adminTab==="texts")return renderTexts();if(adminTab==="appearance")return renderAppearance();renderCash(true)}
 function metrics(items){const wrap=el("div",{class:"metrics"});for(const[l,v]of items)wrap.append(el("div",{class:"metric"},[el("span",{class:"note"},l),el("strong",{},v)]));return wrap}
-function renderCash(overview){const paid=records.filter(r=>r.status==="completed"),sum=paid.reduce((n,r)=>n+(r.paidCents||0),0);app.append(metrics([["Recebido no mês",money(sum/100)],["Concluídos",paid.length],["Pendentes",records.filter(r=>r.status==="pending").length],["Confirmados",records.filter(r=>r.status==="accepted").length]]));app.append(el("p",{class:"note"},"Somente atendimentos finalizados entram no caixa."));for(const method of["Pix","Dinheiro","Débito","Crédito"])app.append(el("div",{class:"row"},[el("span",{},method),el("strong",{},money(paid.filter(r=>r.method===method).reduce((n,r)=>n+(r.paidCents||0),0)/100))]));if(!overview){app.append(button("Imprimir / salvar PDF",printCash,true));if(!paid.length)app.append(el("p",{class:"notice"},"Nenhum atendimento concluído nesse mês."));for(const r of paid)app.append(el("div",{class:"record"},[el("strong",{},r.name),el("p",{class:"note"},fmtDate(r.date)+" · "+r.method+" · "+money(r.paidCents/100)+" · Recebido em "+fmtDate(r.paidDate||r.date))]))}}
+function renderCash(overview){
+ const paid=records.filter(r=>r.status==="completed"),sum=paid.reduce((n,r)=>n+(r.paidCents||0),0);
+ app.append(metrics([["Recebido no mês",money(sum/100)],["Concluídos",paid.length],["Pendentes",records.filter(r=>r.status==="pending").length],["Confirmados",records.filter(r=>r.status==="accepted").length]]));
+ app.append(el("p",{class:"note"},"Somente atendimentos concluídos entram no caixa. Pagamentos podem ser corrigidos depois pelo barbeiro."));
+ for(const method of["Pix","Dinheiro","Débito","Crédito"])app.append(el("div",{class:"row"},[el("span",{},method),el("strong",{},money(paid.filter(r=>r.method===method).reduce((n,r)=>n+(r.paidCents||0),0)/100))]));
+ if(!overview){
+  app.append(button("Imprimir / salvar PDF",printCash,true));
+  if(!paid.length)app.append(el("p",{class:"notice"},"Nenhum atendimento concluído nesse mês."));
+  for(const r of paid){
+   const card=el("div",{class:"record"},[el("strong",{},r.name),el("p",{class:"note payment-note"},fmtDate(r.date)+" · "+r.method+" · "+money((r.paidCents||0)/100)+" · Recebido em "+fmtDate(r.paidDate||r.date))]);
+   const row=el("div",{class:"record-actions"});row.append(button("Editar pagamento",()=>editPaymentForm(card,r),true),button("Cancelar atendimento",()=>cancelCompleted(r),true));card.append(row);app.append(card);
+  }
+ }
+}
 function printCash(){document.getElementById("print-report")?.remove();const report=el("section",{id:"print-report"},[el("h1",{},"Fechamento · Barbearia"),el("p",{},"Mês: "+adminMonth)]),paid=records.filter(r=>r.status==="completed");for(const r of paid)report.append(el("p",{},fmtDate(r.date)+" · "+r.name+" · "+r.method+" · "+money(r.paidCents/100)));report.append(el("h2",{},"Total recebido: "+money(paid.reduce((n,r)=>n+(r.paidCents||0),0)/100)));document.body.append(report);window.print()}
 function renderAgenda(){
- function monthTitle(ym){
-  const [y,m]=ym.split("-").map(Number);
-  return new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(new Date(y,m-1,1));
- }
- async function changeMonth(delta){
-  const [y,m]=adminMonth.split("-").map(Number),d=new Date(y,m-1+delta,1);
-  adminMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);
-  adminDate=adminMonth+"-01";
-  await runAdmin(async()=>{});
- }
- async function goToday(){
-  const today=brazilNow().date,month=today.slice(0,7);
-  if(month!==adminMonth){adminMonth=month;adminDate=today;await runAdmin(async()=>{});}
-  else{adminDate=today;renderAdmin();}
- }
-
+ function monthTitle(ym){const[y,m]=ym.split("-").map(Number);return new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"}).format(new Date(y,m-1,1))}
+ async function changeMonth(delta){const[y,m]=adminMonth.split("-").map(Number),d=new Date(y,m-1+delta,1);adminMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);adminDate=adminMonth+"-01";await runAdmin(async()=>{})}
+ async function goToday(){const today=brazilNow().date,month=today.slice(0,7);if(month!==adminMonth){adminMonth=month;adminDate=today;await runAdmin(async()=>{})}else{adminDate=today;renderAdmin()}}
  const calendar=el("section",{class:"agenda-calendar"});
- const head=el("div",{class:"agenda-cal-head"},[
-  el("strong",{class:"agenda-cal-title"},monthTitle(adminMonth)),
-  el("div",{class:"agenda-cal-actions"},[
-   el("button",{type:"button",class:"cal-mini",onclick:()=>changeMonth(-1),"aria-label":"Mês anterior"},"‹"),
-   el("button",{type:"button",class:"cal-mini",onclick:goToday},"Hoje"),
-   el("button",{type:"button",class:"cal-mini",onclick:()=>changeMonth(1),"aria-label":"Próximo mês"},"›")
-  ])
- ]);
- const week=el("div",{class:"agenda-week"},["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(x=>el("span",{},x)));
- const days=el("div",{class:"agenda-days"});
- const [y,m]=adminMonth.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),today=brazilNow().date;
+ const head=el("div",{class:"agenda-cal-head"},[el("strong",{class:"agenda-cal-title"},monthTitle(adminMonth)),el("div",{class:"agenda-cal-actions"},[el("button",{type:"button",class:"cal-mini",onclick:()=>changeMonth(-1),"aria-label":"Mês anterior"},"‹"),el("button",{type:"button",class:"cal-mini",onclick:goToday},"Hoje"),el("button",{type:"button",class:"cal-mini",onclick:()=>changeMonth(1),"aria-label":"Próximo mês"},"›")])]);
+ const week=el("div",{class:"agenda-week"},["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(x=>el("span",{},x))),days=el("div",{class:"agenda-days"});
+ const[y,m]=adminMonth.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),today=brazilNow().date;
  for(let i=0;i<first.getDay();i++)days.append(el("span",{class:"agenda-day empty"},""));
  for(let day=1;day<=last.getDate();day++){
-  const date=adminMonth+"-"+pad(day),dow=new Date(y,m-1,day,12).getDay();
-  const items=records.filter(r=>r.date===date&&r.status!=="cancelled"&&r.status!=="expired");
-  const cls="agenda-day"+(date===adminDate?" selected":"")+(date===today?" today":"")+(!workingDays.includes(dow)?" sunday":"");
-  const btn=el("button",{type:"button",class:cls,onclick:()=>{adminDate=date;renderAdmin()}},[
-   el("span",{class:"day-number"},day)
-  ]);
-  if(items.length)btn.append(el("span",{class:"day-count"},items.length));
-  const dots=el("span",{class:"day-dots"});
-  items.slice(0,6).forEach(r=>dots.append(el("span",{class:"day-dot "+r.status,title:LABELS[r.status]})));
-  btn.append(dots);days.append(btn);
+  const date=adminMonth+"-"+pad(day),dow=new Date(y,m-1,day,12).getDay(),items=records.filter(r=>r.date===date&&!['cancelled','expired'].includes(r.status));
+  const cls="agenda-day"+(date===adminDate?" selected":"")+(date===today?" today":"")+(!(workingHours[String(dow)]||[]).length?" sunday":"");
+  const btn=el("button",{type:"button",class:cls,onclick:()=>{adminDate=date;renderAdmin()}},[el("span",{class:"day-number"},day)]);if(items.length)btn.append(el("span",{class:"day-count"},items.length));
+  const dots=el("span",{class:"day-dots"});items.slice(0,6).forEach(r=>dots.append(el("span",{class:"day-dot "+r.status,title:LABELS[r.status]})));btn.append(dots);days.append(btn);
  }
- calendar.append(head,week,days);
- app.append(calendar);
-
- const filter=selectField("Mostrar","agenda-filter",[["all","Todos os atendimentos"],...Object.entries(LABELS)],agendaFilter);
- filter.input.onchange=()=>{agendaFilter=filter.input.value;renderAdmin()};
- const chosen=records.filter(r=>r.date===adminDate);
- const active=chosen.filter(r=>!["cancelled","expired"].includes(r.status));
- app.append(
-  el("div",{class:"day-summary"},[
-   el("div",{class:"metric"},[el("span",{class:"note"},"Dia escolhido"),el("strong",{},fmtDate(adminDate))]),
-   el("div",{class:"metric"},[el("span",{class:"note"},"Atendimentos"),el("strong",{},active.length)]),
-   el("div",{class:"metric"},[el("span",{class:"note"},"Pendentes"),el("strong",{},chosen.filter(r=>r.status==="pending").length)])
-  ]),
-  filter.wrap
- );
-
- const list=chosen.filter(r=>agendaFilter==="all"||r.status===agendaFilter);
- if(!list.length)app.append(el("p",{class:"notice"},"Nenhum atendimento para esse dia e filtro."));
+ calendar.append(head,week,days);app.append(calendar);
+ const filter=selectField("Mostrar","agenda-filter",[["all","Todos os atendimentos"],...Object.entries(LABELS)],agendaFilter);filter.input.onchange=()=>{agendaFilter=filter.input.value;renderAdmin()};
+ const chosen=records.filter(r=>r.date===adminDate),active=chosen.filter(r=>!["cancelled","expired"].includes(r.status)),received=chosen.filter(r=>r.status==="completed").reduce((n,r)=>n+(r.paidCents||0),0);
+ const summary=metrics([["Atendimentos",active.length],["Confirmados",chosen.filter(r=>r.status==="accepted").length],["Pendentes",chosen.filter(r=>r.status==="pending").length],["Concluídos",chosen.filter(r=>r.status==="completed").length],["Faltas",chosen.filter(r=>r.status==="no_show").length],["Recebido",money(received/100)]]);summary.classList.add("daily-metrics");
+ app.append(el("p",{class:"note"},"Resumo de "+fmtDate(adminDate)),summary,filter.wrap);
+ const list=chosen.filter(r=>agendaFilter==="all"||r.status===agendaFilter);if(!list.length)app.append(el("p",{class:"notice"},"Nenhum atendimento para esse dia e filtro."));
  for(const r of list){
-  const verifyText=r.phoneVerified?"WhatsApp verificado":"WhatsApp pendente";
-  const code=r.verificationCode?" · código "+r.verificationCode:"";
-  const expiryNote=r.status==="pending"?" · reserva expira em "+Math.max(1,Math.ceil((bookingExpiry(r)-Date.now())/60000))+" min":r.status==="expired"?" · horário liberado":"";
-  const card=el("article",{class:"record"},[
-   el("div",{class:"record-head"},[el("strong",{},clock(r.time)+" · "+r.name),el("span",{class:"badge "+r.status},LABELS[r.status])]),
-   el("p",{class:"note"},r.services.map(s=>s.name).join(" + ")+" · "+money(r.price)+" · "+r.phone),
-   el("p",{class:"note"},verifyText+code+expiryNote)
-  ]),row=el("div",{class:"actions"});
+  const verifyText=r.phoneVerified?"WhatsApp verificado":"WhatsApp pendente",code=r.verificationCode?" · código "+r.verificationCode:"",expiryNote=r.status==="pending"?" · reserva expira em "+Math.max(1,Math.ceil((bookingExpiry(r)-Date.now())/60000))+" min":r.status==="expired"?" · horário liberado":"";
+  const card=el("article",{class:"record"},[el("div",{class:"record-head"},[el("strong",{},clock(r.time)+" · "+r.name),el("span",{class:"badge "+r.status},LABELS[r.status]||r.status)]),el("p",{class:"note"},r.services.map(s=>s.name).join(" + ")+" · "+money(r.price)+" · "+r.phone),el("p",{class:"note"},verifyText+code+expiryNote)]),row=el("div",{class:"record-actions"});
   if(r.status==="pending"&&!r.phoneVerified)row.append(button("Marcar WhatsApp verificado",()=>runAdmin(()=>api("updateBooking",{id:r.id,action:"verifyPhone"}))));
   if(r.status==="pending"&&r.phoneVerified)row.append(button("Aceitar",()=>runAdmin(()=>api("updateBooking",{id:r.id,action:"accept"}))));
+  if(["pending","accepted"].includes(r.status))row.append(button("Editar agendamento",()=>editBookingForm(card,r),true));
   if(["pending","accepted"].includes(r.status))row.append(button("Cancelar",()=>{if(confirm("Cancelar este atendimento e liberar o horário?"))runAdmin(()=>api("updateBooking",{id:r.id,action:"cancel"}))},true));
-  if(r.status==="accepted")row.append(button("Finalizar atendimento",()=>paymentForm(card,r)));
+  if(r.status==="accepted")row.append(button("Finalizar atendimento",()=>paymentForm(card,r)),button("Marcar falta",()=>{if(confirm("Marcar que o cliente faltou?"))runAdmin(()=>api("updateBooking",{id:r.id,action:"noShow"}))},true));
+  if(r.status==="completed")row.append(button("Editar pagamento",()=>editPaymentForm(card,r),true),button("Cancelar atendimento",()=>cancelCompleted(r),true));
   card.append(row);app.append(card);
  }
 }
-function paymentForm(card,r){if(card.querySelector("form"))return;const form=el("form"),amount=formField("Valor cobrado (R$)","paid-"+r.id,"number",r.price,{required:true,min:0,max:10000,step:"0.01"}),method=selectField("Forma de pagamento","method-"+r.id,["Pix","Dinheiro","Débito","Crédito"].map(s=>[s,s]),"Pix"),status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Confirmar recebimento");form.append(amount.wrap,method.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await api("updateBooking",{id:r.id,action:"complete",amount:Number(amount.input.value),method:method.input.value});await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Erro ao finalizar.";submit.disabled=false}};card.append(form)}
+function paymentForm(card,r){
+ if(card.querySelector(".payment-form"))return;const form=el("form",{class:"edit-box payment-form"}),amount=formField("Valor cobrado (R$)","paid-"+r.id,"number",r.price,{required:true,min:0,max:10000,step:"0.01"}),method=selectField("Forma de pagamento","method-"+r.id,["Pix","Dinheiro","Débito","Crédito"].map(s=>[s,s]),"Pix"),status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Confirmar recebimento");
+ form.append(amount.wrap,method.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await api("updateBooking",{id:r.id,action:"complete",amount:Number(amount.input.value),method:method.input.value});await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Erro ao finalizar.";submit.disabled=false}};card.append(form);
+}
+function editPaymentForm(card,r){
+ card.querySelector(".payment-edit")?.remove();const form=el("form",{class:"edit-box payment-edit"}),amount=formField("Valor recebido (R$)","edit-paid-"+r.id,"number",((r.paidCents||0)/100).toFixed(2),{required:true,min:0,max:10000,step:"0.01"}),method=selectField("Forma de pagamento","edit-method-"+r.id,["Pix","Dinheiro","Débito","Crédito"].map(s=>[s,s]),r.method||"Pix"),status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Salvar pagamento");
+ form.append(amount.wrap,method.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await api("updateBooking",{id:r.id,action:"editPayment",amount:Number(amount.input.value),method:method.input.value});await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Não foi possível editar o pagamento.";submit.disabled=false}};card.append(form);
+}
+function cancelCompleted(r){if(confirm("Cancelar este atendimento concluído? O valor será retirado do caixa e o horário ficará como cancelado."))runAdmin(()=>api("updateBooking",{id:r.id,action:"cancel"}))}
+function editBookingForm(card,r){
+ card.querySelector(".booking-edit")?.remove();const form=el("form",{class:"edit-box booking-edit"}),date=formField("Dia","edit-date-"+r.id,"date",r.date,{required:true}),time=formField("Horário","edit-time-"+r.id,"time",clock(r.time),{required:true,step:600}),price=formField("Valor do agendamento (R$)","edit-price-"+r.id,"number",r.price,{required:true,min:0,max:10000,step:"0.01"}),checks=el("div",{class:"service-checks"}),selected=new Set(r.services.map(s=>s.id));
+ const options=[...SERVICES];for(const old of r.services)if(!options.some(s=>s.id===old.id))options.push(old);
+ options.forEach(s=>{const input=el("input",{type:"checkbox",checked:selected.has(s.id)}),label=el("label",{class:"service-check"},[input,el("span",{},s.name+" · "+money(s.price))]);input.onchange=()=>{if(input.checked)selected.add(s.id);else selected.delete(s.id);const current=SERVICES.filter(x=>selected.has(x.id));if(current.length)price.input.value=current.reduce((n,x)=>n+x.price,0).toFixed(2)};checks.append(label)});
+ const status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Salvar alterações");form.append(el("h3",{},"Editar agendamento"),el("div",{class:"filter-row"},[date.wrap,time.wrap,price.wrap]),el("label",{},"Serviços"),checks,submit,status);
+ form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{const serviceIds=[...selected];if(!serviceIds.length)throw Error("Selecione pelo menos um serviço.");await api("updateBooking",{id:r.id,action:"edit",date:date.input.value,time:timeMinutes(time.input.value),serviceIds,price:Number(price.input.value)});adminMonth=date.input.value.slice(0,7);adminDate=date.input.value;await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Não foi possível editar.";submit.disabled=false}};card.append(form);
+}
 function renderClients(){const field=formField("Buscar cliente no mês","client-search","search",clientSearch,{placeholder:"Nome ou telefone"}),list=el("div");app.append(field.wrap,el("p",{class:"note"},"Histórico dos clientes no mês selecionado."),list);function draw(){list.replaceChildren();const groups=new Map();for(const r of records){const phone=r.phone.replace(/\D/g,"").replace(/^55(?=\d{10,11}$)/,"");if(!groups.has(phone))groups.set(phone,[]);groups.get(phone).push(r)}for(const entries of[...groups.values()].sort((a,b)=>a[0].name.localeCompare(b[0].name))){const r=entries[0];if(!(r.name+" "+r.phone).toLowerCase().includes(clientSearch.toLowerCase()))continue;const details=el("details",{class:"record"},[el("summary",{},r.name+" · "+r.phone+" · "+entries.length+" atendimento(s)")]);for(const b of entries)details.append(el("p",{class:"note"},fmtDate(b.date)+" · "+clock(b.time)+" · "+LABELS[b.status]+(b.status==="completed"?" · "+money(b.paidCents/100):"")));list.append(details)}if(!list.children.length)list.append(el("p",{class:"notice"},"Nenhum cliente encontrado."))}field.input.oninput=()=>{clientSearch=field.input.value;draw()};draw()}
 function timeMinutes(v){const[h,m]=v.split(":").map(Number);return h*60+m}
-function renderBlocks(){const form=el("form"),date=formField("Data do bloqueio","block-date","date",adminDate,{required:true,min:brazilNow().date}),start=formField("Das","block-start","time","08:00",{required:true,step:600}),end=formField("Até","block-end","time","19:00",{required:true,step:600}),label=formField("Motivo","block-label","text","",{maxlength:100,placeholder:"Folga, compromisso…"}),status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Bloquear intervalo");form.append(date.wrap,el("div",{class:"filter-row"},[start.wrap,end.wrap]),label.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{if(!validDate(date.input.value))throw Error("Escolha uma data válida.");await api("setBlock",{date:date.input.value,start:timeMinutes(start.input.value),end:timeMinutes(end.input.value),label:label.input.value});adminMonth=date.input.value.slice(0,7);await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Erro ao bloquear.";submit.disabled=false}};app.append(form,el("p",{class:"note"},"Reservas existentes precisam ser canceladas antes de bloquear o mesmo intervalo."));for(const b of blocks)app.append(el("div",{class:"record"},[el("p",{},fmtDate(b.date)+" · "+clock(b.start)+"–"+clock(b.end)+" · "+(b.label||"Indisponível")),button("Liberar intervalo",()=>runAdmin(()=>api("setBlock",{date:b.date,remove:b.id})),true)]))}
+function renderBlocks(){
+ const grid=el("div",{class:"block-grid"});
+ const single=el("section",{class:"block-box"},[el("h3",{},"Bloquear algumas horas"),el("p",{class:"note"},"Use para compromisso, almoço diferente ou uma saída rápida.")]);
+ const form=el("form"),date=formField("Data","block-date","date",adminDate,{required:true,min:brazilNow().date}),start=formField("Das","block-start","time","08:00",{required:true,step:600}),end=formField("Até","block-end","time","19:00",{required:true,step:600}),label=formField("Motivo","block-label","text","",{maxlength:100,placeholder:"Compromisso, saída…"}),status=el("p",{class:"error"}),submit=el("button",{type:"submit",class:"button"},"Bloquear intervalo");
+ form.append(date.wrap,el("div",{class:"filter-row"},[start.wrap,end.wrap]),label.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await api("setBlock",{date:date.input.value,start:timeMinutes(start.input.value),end:timeMinutes(end.input.value),label:label.input.value});adminMonth=date.input.value.slice(0,7);await refreshAdmin();renderAdmin()}catch(err){status.textContent=err?.message||"Erro ao bloquear.";submit.disabled=false}};single.append(form);
+ const vacation=el("section",{class:"block-box"},[el("h3",{},"Folga / férias"),el("p",{class:"note"},"Selecione vários dias de uma vez. Cada dia fica totalmente indisponível.")]);
+ const vf=el("form"),from=formField("Primeiro dia","vac-from","date",adminDate,{required:true,min:brazilNow().date}),to=formField("Último dia","vac-to","date",adminDate,{required:true,min:brazilNow().date}),reason=formField("Motivo","vac-label","text","Folga / férias",{maxlength:100}),vstatus=el("p",{class:"error"}),vsubmit=el("button",{type:"submit",class:"button"},"Bloquear período");
+ vf.append(el("div",{class:"filter-row"},[from.wrap,to.wrap]),reason.wrap,vsubmit,vstatus);vf.onsubmit=async e=>{e.preventDefault();vsubmit.disabled=true;try{const result=await api("setBlockRange",{startDate:from.input.value,endDate:to.input.value,start:0,end:1440,label:reason.input.value||"Folga / férias"});adminMonth=from.input.value.slice(0,7);await refreshAdmin();renderAdmin()}catch(err){vstatus.textContent=err?.message||"Não foi possível bloquear o período.";vsubmit.disabled=false}};vacation.append(vf);grid.append(single,vacation);app.append(grid,el("p",{class:"note"},"Se houver agendamento em algum horário escolhido, cancele ou reagende esse atendimento antes de criar o bloqueio."));
+ const manual=blocks.filter(b=>!b.bookingId);if(!manual.length)app.append(el("p",{class:"notice"},"Nenhum bloqueio manual neste mês."));
+ for(const b of manual)app.append(el("div",{class:"record"},[el("p",{},fmtDate(b.date)+" · "+clock(b.start)+"–"+clock(b.end)+" · "+(b.label||"Indisponível")),button("Liberar intervalo",()=>runAdmin(()=>api("setBlock",{date:b.date,remove:b.id})),true)]));
+}
 async function saveSettings(candidate,status){status.textContent="Salvando…";try{applySettings(await api("savePublicSettings",candidate));status.textContent=DEMO?"Salvo na demonstração deste navegador.":"Alterações salvas para todos os dispositivos."}catch(e){status.textContent=e?.message||"Não foi possível salvar."}}
 function renderServicesAdmin(){
  const form=el("form"),serviceList=el("div"),status=el("p",{class:"note"});
  let draft=SERVICES.map(s=>({...s}));
- const dayNames=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
- const selectedDays=new Set(workingDays.map(Number));
+ let draftHours=normalizeWorkingHours(settings);
+ let selectedDay=workingDays[0]??1;
+ const dayNames=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"],dayShort=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
  function drawServices(){
   serviceList.replaceChildren();
   draft.forEach((s,i)=>{
-   const name=formField("Nome do serviço","service-name-"+i,"text",s.name,{required:true,maxlength:60,placeholder:"Ex.: Corte"}),
-         price=formField("Valor (R$)","service-price-"+i,"number",s.price,{required:true,min:0,max:10000,step:".01"}),
-         duration=formField("Duração (minutos)","service-duration-"+i,"number",s.duration,{required:true,min:10,max:180,step:10});
-   name.input.oninput=()=>draft[i].name=name.input.value;
-   price.input.oninput=()=>draft[i].price=Number(price.input.value);
-   duration.input.oninput=()=>draft[i].duration=Number(duration.input.value);
+   const name=formField("Nome do serviço","service-name-"+i,"text",s.name,{required:true,maxlength:60,placeholder:"Ex.: Corte"}),price=formField("Valor (R$)","service-price-"+i,"number",s.price,{required:true,min:0,max:10000,step:".01"}),duration=formField("Duração (minutos)","service-duration-"+i,"number",s.duration,{required:true,min:10,max:180,step:10});
+   name.input.oninput=()=>draft[i].name=name.input.value;price.input.oninput=()=>draft[i].price=Number(price.input.value);duration.input.oninput=()=>draft[i].duration=Number(duration.input.value);
    const card=el("div",{class:"record"},[el("div",{class:"filter-row"},[name.wrap,price.wrap,duration.wrap])]);
-   if(draft.length>1)card.append(button("Remover serviço",()=>{draft.splice(i,1);drawServices()},true));
-   serviceList.append(card);
+   if(draft.length>1)card.append(button("Remover serviço",()=>{draft.splice(i,1);drawServices()},true));serviceList.append(card);
   });
  }
-
- drawServices();
- const add=button("+ Adicionar serviço",()=>{
-  draft.push({id:"servico_"+crypto.randomUUID(),name:"Novo serviço",price:0,duration:30});
-  drawServices();
- },true);
-
- const workdaysWrap=el("div",{class:"workdays"});
- dayNames.forEach((label,day)=>{
-  const check=el("input",{type:"checkbox",checked:selectedDays.has(day)});
-  const box=el("label",{class:"workday"+(selectedDays.has(day)?" active":"")},[check,el("div",{},label)]);
-  check.onchange=()=>{
-   if(check.checked)selectedDays.add(day);else selectedDays.delete(day);
-   box.classList.toggle("active",check.checked);
-  };
-  workdaysWrap.append(box);
- });
-
- const times=[],scheduleBox=el("div",{class:"schedule-box"},[
-  el("h3",{},"Dias e horários de atendimento"),
-  el("p",{class:"note"},"Marque os dias em que a barbearia atende. Os horários abaixo valem para todos os dias marcados."),
-  workdaysWrap
- ]);
- periods.forEach((p,i)=>{
-  const a=formField("Período "+(i+1)+" · início","period-a-"+i,"time",clock(p[0]),{required:true,step:600}),
-        b=formField("Período "+(i+1)+" · fim","period-b-"+i,"time",clock(p[1]),{required:true,step:600});
-  times.push([a,b]);
-  scheduleBox.append(el("div",{class:"filter-row"},[a.wrap,b.wrap]));
- });
-
- form.append(
-  el("p",{class:"notice"},"O barbeiro pode editar serviços, valores, duração, dias de trabalho e horários. As mudanças valem para novos agendamentos; os antigos mantêm os dados originais."),
-  serviceList,
-  add,
-  scheduleBox,
-  el("button",{class:"button",type:"submit"},"Salvar serviços, dias e horários"),
-  status
- );
-
+ function periodsLabel(day){const ps=draftHours[String(day)]||[];if(!ps.length)return"Fechado";return ps.map(p=>clock(p[0])+"–"+clock(p[1])).join(" · ")}
+ function validateDay(day){const ps=(draftHours[String(day)]||[]).slice().sort((a,b)=>a[0]-b[0]);if(ps.some(([a,b])=>!Number.isFinite(a)||!Number.isFinite(b)||a>=b||a%10||b%10))return false;for(let i=1;i<ps.length;i++)if(ps[i-1][1]>ps[i][0])return false;draftHours[String(day)]=ps;return true}
+ const scheduleTabs=el("div",{class:"day-schedule-tabs"}),editor=el("div",{class:"day-schedule-editor"});
+ function drawTabs(){scheduleTabs.replaceChildren();for(let day=0;day<7;day++)scheduleTabs.append(el("button",{type:"button",class:"day-schedule-tab"+(selectedDay===day?" active":""),onclick:()=>{selectedDay=day;drawTabs();drawDayEditor()}},[dayShort[day],el("small",{},periodsLabel(day))]))}
+ function drawDayEditor(){
+  editor.replaceChildren();const ps=draftHours[String(selectedDay)]||[],open=ps.length>0;
+  const toggle=el("input",{type:"checkbox",checked:open,id:"day-open-"+selectedDay});
+  toggle.onchange=()=>{if(toggle.checked&&!(draftHours[String(selectedDay)]||[]).length)draftHours[String(selectedDay)]=[[480,720],[810,1140]];if(!toggle.checked)draftHours[String(selectedDay)]=[];drawTabs();drawDayEditor()};
+  editor.append(el("h4",{},dayNames[selectedDay]),el("p",{class:"note"},"Edite somente "+dayNames[selectedDay].toLowerCase()+". Os outros dias não serão alterados."),el("div",{class:"day-open-row"},[el("label",{for:"day-open-"+selectedDay},open?"Aberto para agendamentos":"Fechado neste dia"),toggle]));
+  if(!open){editor.append(el("p",{class:"notice"},"Nenhum horário disponível neste dia. Ative o botão acima para abrir a agenda."));return}
+  ps.forEach((p,i)=>{
+   const a=formField("Início","day-"+selectedDay+"-a-"+i,"time",clock(p[0]),{required:true,step:600}),b=formField("Fim","day-"+selectedDay+"-b-"+i,"time",clock(p[1]),{required:true,step:600});
+   const remove=button("Remover período",()=>{draftHours[String(selectedDay)].splice(i,1);if(!draftHours[String(selectedDay)].length)draftHours[String(selectedDay)]=[];drawTabs();drawDayEditor()},true);
+   a.input.onchange=()=>{draftHours[String(selectedDay)][i][0]=timeMinutes(a.input.value);drawTabs()};b.input.onchange=()=>{draftHours[String(selectedDay)][i][1]=timeMinutes(b.input.value);drawTabs()};
+   editor.append(el("div",{class:"period-card"},[el("div",{class:"filter-row"},[a.wrap,b.wrap,remove])]));
+  });
+  editor.append(button("+ Adicionar período",()=>{draftHours[String(selectedDay)].push([480,720]);drawTabs();drawDayEditor()},true));
+ }
+ drawServices();drawTabs();drawDayEditor();
+ const addService=button("+ Adicionar serviço",()=>{draft.push({id:"servico_"+crypto.randomUUID(),name:"Novo serviço",price:0,duration:30});drawServices()},true);
+ const scheduleBox=el("div",{class:"schedule-box"},[el("h3",{},"Dias e horários de atendimento"),el("p",{class:"note"},"Escolha um dia e altere somente o horário dele. Cada dia pode ter horários diferentes."),scheduleTabs,editor]);
+ form.append(el("p",{class:"notice"},"As mudanças de serviços e horários valem para novos agendamentos. Agendamentos já confirmados mantêm os dados originais."),serviceList,addService,scheduleBox,el("button",{class:"button",type:"submit"},"Salvar alterações"),status);
  form.onsubmit=async e=>{
-  e.preventDefault();
-  const clean=draft.map(s=>({id:s.id,name:String(s.name||"").trim(),price:Number(s.price),duration:Number(s.duration)}));
-  if(!clean.length||clean.some(s=>!s.name||!Number.isFinite(s.price)||s.price<0||!Number.isFinite(s.duration)||s.duration<10||s.duration>180||s.duration%10)){
-   status.textContent="Confira os serviços: nome, valor e duração em múltiplos de 10 minutos.";return;
-  }
-  const names=clean.map(s=>s.name.toLowerCase());
-  if(new Set(names).size!==names.length){status.textContent="Não use dois serviços com o mesmo nome.";return;}
-  const days=[...selectedDays].sort((a,b)=>a-b);
-  if(!days.length){status.textContent="Selecione pelo menos um dia de atendimento.";return;}
-  const ps=times.map(([a,b])=>[timeMinutes(a.input.value),timeMinutes(b.input.value)]);
-  if(ps.some(([a,b])=>a>=b||a%10||b%10)||ps.some((p,i)=>i&&ps[i-1][1]>p[0])){
-   status.textContent="Confira os horários: sem sobreposição e em múltiplos de 10 minutos.";return;
-  }
-  await saveSettings({...settings,services:clean,workingDays:days,periods:ps},status);
+  e.preventDefault();const clean=draft.map(s=>({id:s.id,name:String(s.name||"").trim(),price:Number(s.price),duration:Number(s.duration)}));
+  if(!clean.length||clean.some(s=>!s.name||!Number.isFinite(s.price)||s.price<0||!Number.isFinite(s.duration)||s.duration<10||s.duration>180||s.duration%10)){status.textContent="Confira os serviços: nome, valor e duração em múltiplos de 10 minutos.";return}
+  const names=clean.map(s=>s.name.toLowerCase());if(new Set(names).size!==names.length){status.textContent="Não use dois serviços com o mesmo nome.";return}
+  for(let d=0;d<7;d++)if(!validateDay(d)){status.textContent="Confira os horários de "+dayNames[d]+": sem sobreposição, fim depois do início e em múltiplos de 10 minutos.";selectedDay=d;drawTabs();drawDayEditor();return}
+  const days=Object.keys(draftHours).map(Number).filter(d=>(draftHours[String(d)]||[]).length),fallbackPeriods=days.length?draftHours[String(days[0])]:DEFAULTS.periods;
+  if(!days.length){status.textContent="Abra pelo menos um dia de atendimento.";return}
+  await saveSettings({...settings,services:clean,workingHours:draftHours,workingDays:days,periods:fallbackPeriods},status);
  };
  app.append(form);
 }
@@ -254,6 +443,37 @@ async function boot(){
   const root="https://www.gstatic.com/firebasejs/11.10.0/";
   const [A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-firestore.js")]);
   const fb=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fb),db=F.getFirestore(fb);adminAuth=auth;
+  stopRealtimeNotifications=()=>{
+   if(realtimeUnsubscribe){realtimeUnsubscribe();realtimeUnsubscribe=null}
+   if(realtimeExpiryTimer){clearInterval(realtimeExpiryTimer);realtimeExpiryTimer=null}
+   knownPendingIds=new Set();
+  };
+  startRealtimeNotifications=()=>{
+   stopRealtimeNotifications();
+   let firstSnapshot=true;
+   const q=F.query(F.collection(db,"bookings"),F.where("status","==","pending"));
+   realtimeUnsubscribe=F.onSnapshot(q,snap=>{
+    const fresh=snap.docs.map(d=>normalizeRecord({id:d.id,...d.data()})).filter(r=>effectiveStatus(r)==="pending");
+    const freshIds=new Set(fresh.map(r=>r.id));
+    if(!firstSnapshot){
+     for(const ch of snap.docChanges()){
+      if(ch.type!=="added")continue;
+      const r=normalizeRecord({id:ch.doc.id,...ch.doc.data()});
+      if(effectiveStatus(r)==="pending"&&!knownPendingIds.has(r.id))showBookingToast(r);
+     }
+    }
+    firstSnapshot=false;
+    knownPendingIds=freshIds;
+    livePending=fresh.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    renderBookingAlerts();
+   },err=>{
+    console.error("Falha ao acompanhar novos agendamentos:",err);
+   });
+   realtimeExpiryTimer=setInterval(()=>{
+    const next=livePending.filter(r=>effectiveStatus(r)==="pending");
+    if(next.length!==livePending.length){livePending=next;renderBookingAlerts()}
+   },30000);
+  };
   const nextMonthStart=m=>{const[y,mo]=m.split("-").map(Number),d=new Date(Date.UTC(y,mo,1));return d.toISOString().slice(0,7)+"-01"};
   remoteCall=async(name,p={})=>{
    if(name==="getPublicSettings"){
@@ -270,21 +490,48 @@ async function boot(){
    }
    if(name==="updateBooking"){
     const ref=F.doc(db,"bookings",p.id),snap=await F.getDoc(ref);if(!snap.exists())throw Error("Pedido não encontrado.");
-    const r={id:snap.id,...snap.data()};
-    if(p.action==="verifyPhone"){if(effectiveStatus(r)!=="pending")throw Error(effectiveStatus(r)==="expired"?"A reserva já expirou.":"Esse pedido não está mais pendente.");await F.updateDoc(ref,{phoneVerified:true,phoneVerifiedAt:Date.now()});return{...r,phoneVerified:true}}
+    const r={id:snap.id,...snap.data()},current=effectiveStatus(r);
+    if(p.action==="verifyPhone"){
+     if(current!=="pending")throw Error(current==="expired"?"A reserva já expirou.":"Esse pedido não está mais pendente.");
+     await F.updateDoc(ref,{phoneVerified:true,phoneVerifiedAt:Date.now()});return{...r,phoneVerified:true};
+    }
+    if(p.action==="editPayment"){
+     if(current!=="completed")throw Error("Somente atendimento concluído pode ter o pagamento editado.");
+     const amount=Number(p.amount);if(!Number.isFinite(amount)||amount<0||amount>10000||!["Pix","Dinheiro","Débito","Crédito"].includes(p.method))throw Error("Informe valor e pagamento válidos.");
+     await F.updateDoc(ref,{paidCents:Math.round(amount*100),method:p.method,paymentEditedAt:Date.now()});return{...r,paidCents:Math.round(amount*100),method:p.method};
+    }
+    if(p.action==="edit"){
+     if(!["pending","accepted"].includes(current))throw Error("Só é possível editar um agendamento pendente ou confirmado.");
+     const sel=serviceSelection(p.serviceIds),price=Number(p.price),date=p.date,time=Number(p.time);if(!Number.isFinite(price)||price<0||price>10000)throw Error("Informe um valor válido.");
+     if(!scheduleAllows(date,time,sel.duration))throw Error("Esse horário está fora do expediente configurado.");
+     const [targetSlots,targetBlocks,oldSlots]=await Promise.all([
+      F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",date))),
+      F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",date))),
+      F.getDocs(F.query(F.collection(db,"slots"),F.where("bookingId","==",p.id)))
+     ]);
+     const now=Date.now(),busySlots=targetSlots.docs.filter(d=>d.data().bookingId!==p.id&&(!d.data().expiresAt?.toMillis?.()||d.data().expiresAt.toMillis()>now)),busyBlocks=targetBlocks.docs.filter(d=>d.data().bookingId!==p.id);
+     if(busySlots.some(d=>time<d.data().minute+10&&time+sel.duration>d.data().minute)||busyBlocks.some(d=>time<d.data().end&&time+sel.duration>d.data().start))throw Error("Esse horário já está ocupado.");
+     const batch=F.writeBatch(db);batch.update(ref,{date,time,end:time+sel.duration,services:sel.items,price,editedAt:Date.now()});
+     if(current==="pending"){
+      const expiry=bookingExpiry(r);if(expiry<=Date.now())throw Error("A reserva já expirou.");const expStamp=F.Timestamp.fromMillis(expiry),newIds=new Set();
+      for(let t=time;t<time+sel.duration;t+=10){const id=date+"_"+t;newIds.add(id);batch.set(F.doc(db,"slots",id),{bookingId:p.id,ownerUid:r.ownerUid,date,minute:t,expiresAt:expStamp})}
+      for(const d of oldSlots.docs)if(!newIds.has(d.id))batch.delete(d.ref);
+     }else{
+      batch.set(F.doc(db,"blocks","booking_"+p.id),{date,start:time,end:time+sel.duration,label:"Agendamento confirmado",bookingId:p.id,createdAt:r.acceptedAt||Date.now()});
+     }
+     await batch.commit();return{...r,date,time,end:time+sel.duration,services:sel.items,price};
+    }
     const change=transition(r,p.action,p.amount,p.method),batch=F.writeBatch(db);
     batch.update(ref,{...change,...(p.action==="complete"?{completedAt:Date.now(),paidDate:brazilNow().date}:{})});
     if(p.action==="accept"){
      const ss=await F.getDocs(F.query(F.collection(db,"slots"),F.where("bookingId","==",p.id)));for(const d of ss.docs)batch.delete(d.ref);
      batch.set(F.doc(db,"blocks","booking_"+p.id),{date:r.date,start:r.time,end:r.end,label:"Agendamento confirmado",bookingId:p.id,createdAt:Date.now()});
-     if(r.phoneLockKey)batch.delete(F.doc(db,"phoneLocks",r.phoneLockKey));
-     if(r.ownerUid)batch.delete(F.doc(db,"clientLocks",r.ownerUid));
+     if(r.phoneLockKey)batch.delete(F.doc(db,"phoneLocks",r.phoneLockKey));if(r.ownerUid)batch.delete(F.doc(db,"clientLocks",r.ownerUid));
     }
-    if(p.action==="cancel"){
+    if(p.action==="cancel"||p.action==="noShow"){
      const ss=await F.getDocs(F.query(F.collection(db,"slots"),F.where("bookingId","==",p.id)));for(const d of ss.docs)batch.delete(d.ref);
      batch.delete(F.doc(db,"blocks","booking_"+p.id));
-     if(r.phoneLockKey)batch.delete(F.doc(db,"phoneLocks",r.phoneLockKey));
-     if(r.ownerUid)batch.delete(F.doc(db,"clientLocks",r.ownerUid));
+     if(r.phoneLockKey)batch.delete(F.doc(db,"phoneLocks",r.phoneLockKey));if(r.ownerUid)batch.delete(F.doc(db,"clientLocks",r.ownerUid));
     }
     await batch.commit();return{id:p.id,...r,...change};
    }
@@ -298,6 +545,18 @@ async function boot(){
     const now=Date.now(),activeSlots=ss.docs.filter(d=>{const exp=d.data().expiresAt?.toMillis?.();return!exp||exp>now});const busy=[...activeSlots.map(d=>({start:d.data().minute,end:d.data().minute+10})),...bs.docs.map(d=>({start:d.data().start,end:d.data().end}))];
     if(busy.some(b=>p.start<b.end&&p.end>b.start))throw Error("Existe reserva ou bloqueio nesse intervalo.");
     const id="block_"+crypto.randomUUID();await F.setDoc(F.doc(db,"blocks",id),{date:p.date,start:p.start,end:p.end,label:p.label||"",createdAt:Date.now()});return{ok:true};
+   }
+   if(name==="setBlockRange"){
+    const dates=dateRange(p.startDate,p.endDate),start=Number(p.start),end=Number(p.end);if(start>=end)throw Error("Confira o horário do bloqueio.");
+    const [ss,bs]=await Promise.all([
+     F.getDocs(F.query(F.collection(db,"slots"),F.where("date",">=",p.startDate),F.where("date","<=",p.endDate))),
+     F.getDocs(F.query(F.collection(db,"blocks"),F.where("date",">=",p.startDate),F.where("date","<=",p.endDate)))
+    ]);
+    const now=Date.now(),activeSlots=ss.docs.filter(d=>!d.data().expiresAt?.toMillis?.()||d.data().expiresAt.toMillis()>now);
+    for(const date of dates){
+     if(activeSlots.some(d=>d.data().date===date&&start<d.data().minute+10&&end>d.data().minute)||bs.docs.some(d=>d.data().date===date&&start<d.data().end&&end>d.data().start))throw Error("Existe atendimento ou bloqueio em "+fmtDate(date)+". Ajuste esse dia primeiro.");
+    }
+    const batch=F.writeBatch(db),group="range_"+crypto.randomUUID();for(const date of dates)batch.set(F.doc(db,"blocks",group+"_"+date),{date,start,end,label:p.label||"Folga / férias",rangeGroup:group,createdAt:Date.now()});await batch.commit();return{ok:true,count:dates.length};
    }
    if(name==="savePublicSettings"){
     await F.setDoc(F.doc(db,"settings","public"),p,{merge:true});const snap=await F.getDoc(F.doc(db,"settings","public"));return{...DEFAULTS,...snap.data()};

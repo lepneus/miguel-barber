@@ -30,6 +30,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:20px;paddi
 .calendar-caption{font-size:12px;color:var(--muted);margin:10px 0 0}
 @media(max-width:480px){.calendar-card{padding:12px}.calendar-grid,.calendar-week{gap:3px}.calendar-day{min-height:42px;font-size:13px}}
 
+.finished-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.finished-actions .button{flex:0 1 auto}
 @media(max-width:800px){.hero{grid-template-columns:1fr;gap:38px;padding-top:35px;padding-bottom:55px}h1{max-width:15ch}.booking{padding:45px 0 60px}.ticket{padding:25px 20px}.booking-head{align-items:flex-start;flex-wrap:wrap}}
 @media(max-width:400px){.slots{grid-template-columns:repeat(3,1fr)}.option{padding:14px 12px}.option-name{font-size:14px;gap:8px}.option-info{font-size:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -55,7 +56,8 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:20px;paddi
 "use strict";
 let SERVICES=[{id:"corte",name:"Corte",price:40,duration:30},{id:"barba",name:"Barba",price:20,duration:20},{id:"sobrancelha",name:"Sobrancelha",price:15,duration:20}];
 const WHATSAPP="5545999654057";
-const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,workingDays:[1,2,3,4,5,6],periods:[[480,720],[810,1140]]};
+const DEFAULT_WORKING_HOURS={"0":[],"1":[[480,720],[810,1140]],"2":[[480,720],[810,1140]],"3":[[480,720],[810,1140]],"4":[[480,720],[810,1140]],"5":[[480,720],[810,1140]],"6":[[480,720],[810,1140]]};
+const DEFAULTS={eyebrow:"Cuidado nos detalhes. Simplicidade ao agendar.",title:"Seu próximo corte começa aqui.",sub:"Escolha seus serviços, encontre um horário livre e acompanhe a confirmação do barbeiro.",paper:"#FAF8F5",ink:"#242523",accent:"#34594C",detail:"#AD8956",bgImage:"",services:SERVICES,workingHours:DEFAULT_WORKING_HOURS,workingDays:[1,2,3,4,5,6],periods:[[480,720],[810,1140]]};
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyDkaDl6pxcPVIwMT35yr0tKsvBS4loOatI",
   authDomain:"miguel-barber-bf59f.firebaseapp.com",
@@ -67,10 +69,10 @@ const FIREBASE_CONFIG={
 };
 const DEMO=new URLSearchParams(location.search).get("demo")==="1";
 const DEMO_KEY="barbearia:demo:v2";
-let settings={...DEFAULTS},workingDays=[...DEFAULTS.workingDays],periods=DEFAULTS.periods,onlineReady=false,remoteCall,bookingResult=null,avail=[],availabilityKey="",savingBooking=false,countdownTimer=null;
+let settings={...DEFAULTS},workingHours=structuredClone(DEFAULT_WORKING_HOURS),workingDays=[...DEFAULTS.workingDays],periods=DEFAULTS.periods,onlineReady=false,remoteCall,bookingResult=null,avail=[],availabilityKey="",savingBooking=false,countdownTimer=null;
 let state=freshState();
 const ticket=document.getElementById("ticket"),modeNotice=document.getElementById("mode-notice");
-function freshState(){return{step:0,name:"",phone:"",services:[],date:"",time:null,finished:false,requestId:null,verificationCode:null}}
+function freshState(){return{step:0,name:"",phone:"",services:[],date:"",time:null,finished:false,requestId:null,verificationCode:null,rescheduleId:null,rescheduleDuration:null,rescheduleServices:null,reschedulePrice:null}}
 const PENDING_TTL=60*60*1000;
 function bookingExpiry(r){return Number(r?.expiresAt)||(Number(r?.createdAt)||0)+PENDING_TTL}
 function effectiveStatus(r){return r?.status==="pending"&&bookingExpiry(r)&&Date.now()>=bookingExpiry(r)?"expired":r?.status}
@@ -87,18 +89,33 @@ async function phoneLockKey(value){
 function makeVerificationCode(){const a=new Uint32Array(1);crypto.getRandomValues(a);return String(100000+(a[0]%900000))}
 function money(n){return new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n)}
 function pad(n){return String(n).padStart(2,"0")}function clock(n){return pad(Math.floor(n/60))+":"+pad(n%60)}function niceDate(d=state.date){return d?d.split("-").reverse().join("/"):""}
-function selectedServices(){return SERVICES.filter(s=>state.services.includes(s.id))}function totalPrice(){return selectedServices().reduce((n,s)=>n+s.price,0)}function duration(){return selectedServices().reduce((n,s)=>n+s.duration,0)}
+function selectedServices(){return state.rescheduleId&&Array.isArray(state.rescheduleServices)?state.rescheduleServices:SERVICES.filter(s=>state.services.includes(s.id))}function totalPrice(){return state.rescheduleId&&Number.isFinite(state.reschedulePrice)?state.reschedulePrice:selectedServices().reduce((n,s)=>n+s.price,0)}function duration(){return state.rescheduleId&&Number.isFinite(state.rescheduleDuration)?state.rescheduleDuration:selectedServices().reduce((n,s)=>n+s.duration,0)}
 function brazilNow(){const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));return{date:`${p.year}-${p.month}-${p.day}`,minute:+p.hour*60 + +p.minute}}
 function validDate(date){if(typeof date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(date))return false;const d=new Date(date+"T12:00:00Z");return Number.isFinite(+d)&&d.toISOString().slice(0,10)===date}
 function selection(ids,cfg={services:SERVICES}){if(!ids.length)throw Error("Selecione os serviços.");const items=ids.map(id=>cfg.services.find(s=>s.id===id));if(items.some(s=>!s))throw Error("Serviço inválido.");return{items,price:items.reduce((n,s)=>n+s.price,0),duration:items.reduce((n,s)=>n+s.duration,0)}}
-function slots(date,dur,day={},cfg={periods,workingDays},now=brazilNow()){
+function normalizeWorkingHours(cfg={}){
+ const source=cfg.workingHours;
+ if(source&&typeof source==="object"){
+  const out={};for(let d=0;d<7;d++)out[String(d)]=Array.isArray(source[String(d)])?source[String(d)].map(p=>[Number(p[0]),Number(p[1])]).filter(p=>Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[0]<p[1]):[];
+  return out;
+ }
+ const days=Array.isArray(cfg.workingDays)?cfg.workingDays.map(Number):DEFAULTS.workingDays;
+ const ps=Array.isArray(cfg.periods)?cfg.periods:DEFAULTS.periods;
+ const out={};for(let d=0;d<7;d++)out[String(d)]=days.includes(d)?ps.map(p=>[Number(p[0]),Number(p[1])]):[];return out;
+}
+function periodsForDate(date,cfg={}){
+ if(!validDate(date))return[];
+ const d=new Date(date+"T12:00:00Z").getUTCDay();
+ const hours=cfg.workingHours?normalizeWorkingHours(cfg):workingHours;
+ return hours[String(d)]||[];
+}
+function slots(date,dur,day={},cfg={},now=brazilNow()){
  const max=new Date(Date.now()+90*86400000).toISOString().slice(0,10);
  if(!validDate(date)||date<now.date||date>max)return[];
- const dow=new Date(date+"T12:00:00Z").getUTCDay();
- const days=Array.isArray(cfg.workingDays)?cfg.workingDays:workingDays;
- if(!days.map(Number).includes(dow))return[];
+ const dayPeriods=periodsForDate(date,cfg);
+ if(!dayPeriods.length)return[];
  const result=[];
- for(const[a,b]of cfg.periods||periods)for(let t=a;t+dur<=b;t+=10){
+ for(const[a,b]of dayPeriods)for(let t=a;t+dur<=b;t+=10){
   if(date===now.date&&t<=now.minute)continue;
   if((day.busy||[]).some(x=>t<x.end&&t+dur>x.start))continue;
   result.push(t)
@@ -137,6 +154,12 @@ async function api(name,p={}){
     };
     d.records.push(r);saveLocal(d);return r;
   }
+  if(name==="rescheduleBooking"){
+    const r=d.records.find(x=>x.id===p.id);if(!r)throw Error("Agendamento não encontrado.");const current=effectiveStatus(r);if(!["pending","accepted"].includes(current))throw Error("Este agendamento não pode mais ser reagendado.");
+    const dur=r.end-r.time,date=p.date,time=Number(p.time),busy=[...d.records.filter(x=>x.id!==r.id&&x.date===date&&!['cancelled','expired','no_show'].includes(effectiveStatus(x))).map(x=>({start:x.time,end:x.end})),...d.blocks.filter(x=>x.date===date&&x.bookingId!==r.id).map(x=>({start:x.start,end:x.end}))];
+    if(!slots(date,dur,{busy},{...cfg,workingHours:normalizeWorkingHours(cfg)}).includes(time))throw Error("Esse novo horário não está disponível.");
+    Object.assign(r,{date,time,end:time+dur,rescheduledAt:Date.now()});saveLocal(d);return{...r,status:effectiveStatus(r)};
+  }
   if(name==="getBooking"){
     const r=d.records.find(r=>r.id===p.id);
     return r?{...r,status:effectiveStatus(r)}:null;
@@ -149,24 +172,19 @@ function formField(label,id,type,value,attrs={}){const input=el("input",{id,type
 function applySettings(c){
  settings={...DEFAULTS,...c};
  SERVICES=[...(settings.services||DEFAULTS.services)];
- workingDays=Array.isArray(settings.workingDays)?settings.workingDays.map(Number):[...DEFAULTS.workingDays];
+ workingHours=normalizeWorkingHours(settings);
+ workingDays=Object.keys(workingHours).map(Number).filter(d=>(workingHours[String(d)]||[]).length);
  periods=settings.periods||DEFAULTS.periods;
  document.getElementById("hero-eyebrow").textContent=settings.eyebrow;
  document.getElementById("hero-title").textContent=settings.title;
  document.getElementById("hero-sub").textContent=settings.sub;
  for(const name of["paper","ink","accent","detail"])document.documentElement.style.setProperty("--"+name,settings[name]);
- if(settings.bgImage){
-  document.body.style.backgroundImage=`linear-gradient(#ffffffeb,#ffffffeb),url(${JSON.stringify(settings.bgImage)})`;
-  document.body.style.backgroundSize="cover";document.body.style.backgroundPosition="center"
- }else document.body.style.backgroundImage="none";
- const card=document.querySelector(".service-card");
- card.replaceChildren(el("h2",{},"Serviços"));
+ if(settings.bgImage){document.body.style.backgroundImage=`linear-gradient(#ffffffeb,#ffffffeb),url(${JSON.stringify(settings.bgImage)})`;document.body.style.backgroundSize="cover";document.body.style.backgroundPosition="center"}else document.body.style.backgroundImage="none";
+ const card=document.querySelector(".service-card");card.replaceChildren(el("h2",{},"Serviços"));
  for(const s of SERVICES)card.append(el("div",{class:"service-line"},[el("span",{},[s.name,el("small",{},s.duration+" minutos")]),el("strong",{},money(s.price))]));
- const dayNames=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
- const activeDays=workingDays.slice().sort((a,b)=>a-b).map(d=>dayNames[d]).join(" · ")||"Nenhum dia aberto";
- const hours=periods.map(p=>clock(p[0])+"–"+clock(p[1])).join(" · ");
- document.querySelector(".hours").replaceChildren(el("strong",{},"Atendimento"),el("br"),activeDays,el("br"),hours);
- document.getElementById("footer-hours").textContent="Atendimento: "+activeDays+" · "+hours;
+ const dayNames=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],activeDays=workingDays.slice().sort((a,b)=>a-b).map(d=>dayNames[d]).join(" · ")||"Nenhum dia aberto";
+ document.querySelector(".hours").replaceChildren(el("strong",{},"Atendimento"),el("br"),activeDays,el("br"),"Horários variam por dia");
+ document.getElementById("footer-hours").textContent="Atendimento: "+activeDays+" · consulte o calendário";
 }
 function go(step){state.step=step;render();ticket.querySelector("h3")?.focus({preventScroll:true})}
 function render(){if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null}const progress=document.getElementById("progress");progress.replaceChildren();["Seus dados","Serviços","Data e horário","Revisão"].forEach((name,i)=>progress.append(el("span",{class:i===state.step&&!state.finished?"active":"",title:name,"aria-label":name,"aria-current":i===state.step&&!state.finished?"step":null},i+1)));ticket.replaceChildren();if(state.finished)return renderFinished();[renderIdentity,renderServices,renderDateTime,renderReview][state.step]()}
@@ -208,7 +226,7 @@ function renderDateTime(){
   for(let day=1;day<=last.getDate();day++){
    const date=viewMonth+"-"+pad(day);
    const dow=new Date(y,m-1,day,12).getDay();
-   const disabled=date<now.date||date>max||!workingDays.includes(dow);
+   const disabled=date<now.date||date>max||!periodsForDate(date).length;
    const cls="calendar-day"+(date===now.date?" today":"")+(date===state.date?" selected":"");
    days.append(el("button",{type:"button",class:cls,disabled,onclick:()=>selectDate(date),"aria-label":"Selecionar "+date},day));
   }
@@ -231,30 +249,44 @@ function renderDateTime(){
  if(state.date)selectDate(state.date);else status.textContent="Toque em um dia do calendário para ver os horários.";
  ticket.append(actions(button("← Voltar",()=>go(1),true),next));
 }
-function renderReview(){ticket.append(heading("Confira seu agendamento"));for(const[k,v]of[["Nome",state.name],["Telefone",state.phone],["Serviços",selectedServices().map(s=>s.name).join(", ")],["Total",money(totalPrice())],["Data",niceDate()],["Horário",clock(state.time)+" – "+clock(state.time+duration())]])ticket.append(el("div",{class:"row"},[el("span",{},k),el("span",{},v)]));ticket.append(el("p",{class:"notice"},DEMO?"Modo teste: esse pedido fica salvo somente neste navegador.":"Ao enviar, o pedido será salvo e o WhatsApp abrirá com uma mensagem pronta. Enquanto houver uma reserva pendente, este WhatsApp e este dispositivo não poderão criar outro horário."));const status=el("p",{class:"error",role:"alert"}),send=button(DEMO?"Criar pedido de teste":"Enviar agendamento",async()=>{if(savingBooking)return;const waWindow=DEMO?null:window.open("about:blank","_blank");savingBooking=true;send.disabled=true;status.textContent="Enviando…";try{state.requestId=state.requestId||("r_"+crypto.randomUUID());state.verificationCode=state.verificationCode||makeVerificationCode();bookingResult=await api("createBooking",{id:state.requestId,name:state.name,phone:state.phone,services:state.services,date:state.date,time:state.time,verificationCode:state.verificationCode});state.finished=true;sessionStorage.setItem(DEMO?"barber-demo-last":"barber-last",bookingResult.id);render();if(waWindow)waWindow.location.href=verificationWhatsappUrl()}catch(e){if(waWindow)waWindow.close();status.textContent=e.message||"Não foi possível enviar.";if(/indisponível/i.test(status.textContent)){availabilityKey="";state.time=null}}finally{savingBooking=false;send.disabled=false}});ticket.append(status,actions(button("← Voltar",()=>{state.requestId=null;go(2)},true),send))}
-const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled:"Cancelado",completed:"Concluído",expired:"Reserva expirada"};
+function renderReview(){
+ const moving=!!state.rescheduleId;ticket.append(heading(moving?"Confira o novo horário":"Confira seu agendamento"));
+ for(const[k,v]of[["Nome",state.name],["Telefone",state.phone],["Serviços",selectedServices().map(s=>s.name).join(", ")],["Total",money(totalPrice())],["Data",niceDate()],["Horário",clock(state.time)+" – "+clock(state.time+duration())]])ticket.append(el("div",{class:"row"},[el("span",{},k),el("span",{},v)]));
+ ticket.append(el("p",{class:"notice"},moving?"Ao confirmar, o mesmo agendamento será movido para o novo dia e horário. Você não precisa cancelar e criar outro.":DEMO?"Modo teste: esse pedido fica salvo somente neste navegador.":"Ao enviar, o pedido será salvo e o WhatsApp abrirá com uma mensagem pronta. Enquanto houver uma reserva pendente, este WhatsApp e este dispositivo não poderão criar outro horário."));
+ const status=el("p",{class:"error",role:"alert"}),send=button(moving?"Confirmar reagendamento":DEMO?"Criar pedido de teste":"Enviar agendamento",async()=>{
+  if(savingBooking)return;const waWindow=!DEMO?window.open("about:blank","_blank"):null;savingBooking=true;send.disabled=true;status.textContent=moving?"Reagendando…":"Enviando…";
+  try{
+   if(moving){bookingResult=await api("rescheduleBooking",{id:state.rescheduleId,date:state.date,time:state.time});state.finished=true;render();if(waWindow)waWindow.location.href=rescheduleWhatsappUrl()}
+   else{state.requestId=state.requestId||("r_"+crypto.randomUUID());state.verificationCode=state.verificationCode||makeVerificationCode();bookingResult=await api("createBooking",{id:state.requestId,name:state.name,phone:state.phone,services:state.services,date:state.date,time:state.time,verificationCode:state.verificationCode});state.finished=true;sessionStorage.setItem(DEMO?"barber-demo-last":"barber-last",bookingResult.id);render();if(waWindow)waWindow.location.href=verificationWhatsappUrl()}
+  }catch(e){if(waWindow)waWindow.close();status.textContent=e.message||"Não foi possível concluir.";if(/indisponível|horário/i.test(status.textContent)){availabilityKey="";state.time=null}}
+  finally{savingBooking=false;send.disabled=false}
+ });ticket.append(status,actions(button("← Voltar",()=>{if(!moving)state.requestId=null;go(2)},true),send));
+}
+const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled:"Cancelado",completed:"Concluído",expired:"Reserva expirada",no_show:"Faltou"};
 function whatsappUrl(){const message=["Solicitação de horário — Protótipo Barbearia","","Nome: "+state.name,"Telefone: "+state.phone,"Serviços: "+selectedServices().map(s=>s.name).join(", "),"Total: "+money(totalPrice()),"Data: "+niceDate(),"Horário: "+clock(state.time)].join("\n");return"https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message)}
 function verificationWhatsappUrl(){const r=bookingResult||{};const code=r.verificationCode||state.verificationCode||"";const services=(r.services||selectedServices()).map(s=>s.name).join(", ");const total=money(r.price??totalPrice());const start=r.time??state.time;const end=r.end??(start+duration());const message=["Novo agendamento — Protótipo Barbearia","","Cliente: "+(r.name||state.name),"WhatsApp: "+(r.phone||state.phone),"Serviço(s): "+services,"Data: "+niceDate(r.date||state.date),"Horário: "+clock(start)+" – "+clock(end),"Valor: "+total,"Código: "+code,"","O horário fica reservado por até 1 hora enquanto aguardo a confirmação do barbeiro.","Confirmo este agendamento e que este é meu WhatsApp."].join("\n");return"https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message)}
+function rescheduleWhatsappUrl(){const r=bookingResult||{};const message=["Reagendamento — Protótipo Barbearia","","Cliente: "+(r.name||state.name),"Novo dia: "+niceDate(r.date||state.date),"Novo horário: "+clock(r.time??state.time)+" – "+clock(r.end??((r.time??state.time)+duration())),"Serviço(s): "+(r.services||selectedServices()).map(s=>s.name).join(", "),"","O agendamento foi reagendado pelo site."].join("\n");return"https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message)}
+function beginRebooking(){
+ const r=bookingResult;if(!r)return;const current=effectiveStatus(r),active=["pending","accepted"].includes(current),ids=(r.services||[]).map(s=>s.id).filter(id=>SERVICES.some(x=>x.id===id));
+ state={...freshState(),name:r.name||"",phone:r.phone||"",services:ids,date:"",time:null,step:ids.length?2:1,rescheduleId:active?r.id:null,rescheduleDuration:active?(r.end-r.time):null,rescheduleServices:active?(r.services||[]):null,reschedulePrice:active?Number(r.price):null};bookingResult=null;render();
+}
 function renderFinished(){
- const currentStatus=effectiveStatus(bookingResult),verified=!!bookingResult?.phoneVerified;
- if(bookingResult&&currentStatus!==bookingResult.status)bookingResult={...bookingResult,status:currentStatus};
+ const currentStatus=effectiveStatus(bookingResult),verified=!!bookingResult?.phoneVerified;if(bookingResult&&currentStatus!==bookingResult.status)bookingResult={...bookingResult,status:currentStatus};
  ticket.append(heading(LABELS[currentStatus]||"Pedido enviado"));
  if(currentStatus==="pending")ticket.append(el("p",{class:"notice"},DEMO?"Pedido fictício salvo neste navegador.":"Seu horário está reservado temporariamente. O barbeiro tem até 1 hora para confirmar. Fale com ele pelo WhatsApp para agilizar a confirmação."));
  else if(currentStatus==="accepted")ticket.append(el("p",{class:"notice"},"Atendimento confirmado pelo barbeiro. Seu horário continua reservado."));
  else if(currentStatus==="expired")ticket.append(el("p",{class:"notice"},"O barbeiro não confirmou dentro de 1 hora. A reserva expirou e o horário voltou a ficar disponível."));
  else if(currentStatus==="cancelled")ticket.append(el("p",{class:"notice"},"Este agendamento foi cancelado e o horário foi liberado."));
+ else if(currentStatus==="no_show")ticket.append(el("p",{class:"notice"},"O atendimento foi marcado como falta pelo barbeiro."));
  else ticket.append(el("p",{class:"notice"},"Atendimento concluído."));
  if(bookingResult)ticket.append(el("p",{},niceDate(bookingResult.date)+" · "+clock(bookingResult.time)+" · "+money(bookingResult.price)));
  if(currentStatus==="pending"){
-  const expiry=bookingExpiry(bookingResult),counter=el("div",{class:"countdown"},[el("span",{class:"note"},"Tempo para o barbeiro confirmar"),el("strong",{},formatRemaining(expiry-Date.now())),el("span",{class:"note"},"Depois disso o horário é liberado automaticamente.")]);
-  ticket.append(counter);
-  const value=counter.querySelector("strong");
-  countdownTimer=setInterval(()=>{const left=expiry-Date.now();if(left<=0){clearInterval(countdownTimer);countdownTimer=null;bookingResult={...bookingResult,status:"expired"};render();return}value.textContent=formatRemaining(left)},1000);
+  const expiry=bookingExpiry(bookingResult),counter=el("div",{class:"countdown"},[el("span",{class:"note"},"Tempo para o barbeiro confirmar"),el("strong",{},formatRemaining(expiry-Date.now())),el("span",{class:"note"},"Depois disso o horário é liberado automaticamente.")]);ticket.append(counter);const value=counter.querySelector("strong");countdownTimer=setInterval(()=>{const left=expiry-Date.now();if(left<=0){clearInterval(countdownTimer);countdownTimer=null;bookingResult={...bookingResult,status:"expired"};render();return}value.textContent=formatRemaining(left)},1000);
   if(!verified)ticket.append(el("div",{class:"verify-box"},[el("strong",{},"Código de confirmação: "+(bookingResult?.verificationCode||state.verificationCode||"—")),el("p",{class:"note"},"Envie a mensagem pronta para o barbeiro. Ela leva seu nome, serviço, data, horário, valor e código."),el("a",{class:"button",href:verificationWhatsappUrl(),target:"_blank",rel:"noopener"},"Falar com o barbeiro no WhatsApp")]));
  }
- const status=el("p",{class:"error",role:"alert"});
- if(currentStatus==="pending"||currentStatus==="accepted")ticket.append(button("Atualizar situação",async()=>{try{bookingResult=await api("getBooking",{id:bookingResult.id});if(!bookingResult)throw Error("Pedido não encontrado.");render()}catch(e){status.textContent=e.message}}),status);
- ticket.append(actions(button("Novo agendamento",()=>{state=freshState();bookingResult=null;sessionStorage.removeItem(DEMO?"barber-demo-last":"barber-last");go(0)},true),currentStatus==="pending"?el("a",{class:"button secondary",href:verificationWhatsappUrl(),target:"_blank",rel:"noopener"},"Falar com o barbeiro"):el("a",{class:"button secondary",href:whatsappUrl(),target:"_blank",rel:"noopener"},"Falar no WhatsApp")));
+ const status=el("p",{class:"error",role:"alert"});if(currentStatus==="pending"||currentStatus==="accepted")ticket.append(button("Atualizar situação",async()=>{try{bookingResult=await api("getBooking",{id:bookingResult.id});if(!bookingResult)throw Error("Pedido não encontrado.");render()}catch(e){status.textContent=e.message}}),status);
+ const row=el("div",{class:"finished-actions"});row.append(button("Reagendar",beginRebooking,true),button("Novo agendamento",()=>{state=freshState();bookingResult=null;sessionStorage.removeItem(DEMO?"barber-demo-last":"barber-last");go(0)},true));
+ row.append(currentStatus==="pending"?el("a",{class:"button",href:verificationWhatsappUrl(),target:"_blank",rel:"noopener"},"Falar com o barbeiro"):el("a",{class:"button",href:whatsappUrl(),target:"_blank",rel:"noopener"},"Falar no WhatsApp"));ticket.append(row);
 }
 async function restoreBooking(){try{const id=sessionStorage.getItem(DEMO?"barber-demo-last":"barber-last");if(id){const r=await api("getBooking",{id});if(r){bookingResult=r;state={...freshState(),name:r.name,phone:r.phone,date:r.date,time:r.time,services:r.services.map(s=>s.id),finished:true,verificationCode:r.verificationCode||null}}}}catch{}}
 async function boot(){
@@ -272,7 +304,7 @@ async function boot(){
     return snap.exists()?{...DEFAULTS,...snap.data()}:DEFAULTS;
    }
    if(name==="getAvailability"){
-    const cfg={services:SERVICES,periods,workingDays},sel=selection(p.services,cfg);
+    const cfg={services:SERVICES,periods,workingDays,workingHours},sel=selection(p.services,cfg);
     const [slotSnap,blockSnap]=await Promise.all([
      F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",p.date))),
      F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",p.date)))
@@ -285,7 +317,7 @@ async function boot(){
    }
    if(name==="createBooking"){
     const user=auth.currentUser;if(!user)throw Error("Sessão do cliente não iniciada.");
-    const cfg={services:SERVICES,periods,workingDays},sel=selection(p.services,cfg);
+    const cfg={services:SERVICES,periods,workingDays,workingHours},sel=selection(p.services,cfg);
     if(!slots(p.date,sel.duration,{busy:[]},cfg).includes(p.time))throw Error("Data ou horário inválido.");
 
     const blockSnap=await F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",p.date)));
@@ -341,6 +373,17 @@ async function boot(){
       tx.set(clientLockRef,{bookingId:p.id,ownerUid:user.uid,expiresAt:expiryStamp});
       return booking;
     });
+   }
+   if(name==="rescheduleBooking"){
+    const user=auth.currentUser;if(!user)throw Error("Sessão do cliente não iniciada.");const ref=F.doc(db,"bookings",p.id),snap=await F.getDoc(ref);if(!snap.exists())throw Error("Agendamento não encontrado.");const r={id:snap.id,...snap.data()},current=effectiveStatus(r);if(r.ownerUid!==user.uid)throw Error("Este agendamento pertence a outra sessão.");if(!["pending","accepted"].includes(current))throw Error("Este agendamento não pode mais ser reagendado.");
+    const dur=r.end-r.time,date=p.date,time=Number(p.time),cfg={services:SERVICES,periods,workingDays,workingHours};if(!slots(date,dur,{busy:[]},cfg).includes(time))throw Error("Esse novo horário não está disponível.");
+    const [targetSlots,targetBlocks,oldSlots]=await Promise.all([F.getDocs(F.query(F.collection(db,"slots"),F.where("date","==",date))),F.getDocs(F.query(F.collection(db,"blocks"),F.where("date","==",date))),F.getDocs(F.query(F.collection(db,"slots"),F.where("bookingId","==",p.id)))]);const now=Date.now(),busySlots=targetSlots.docs.filter(d=>d.data().bookingId!==p.id&&(!d.data().expiresAt?.toMillis?.()||d.data().expiresAt.toMillis()>now)),busyBlocks=targetBlocks.docs.filter(d=>d.data().bookingId!==p.id);
+    if(busySlots.some(d=>time<d.data().minute+10&&time+dur>d.data().minute)||busyBlocks.some(d=>time<d.data().end&&time+dur>d.data().start))throw Error("Esse novo horário já está ocupado.");
+    const batch=F.writeBatch(db);batch.update(ref,{date,time,end:time+dur,rescheduledAt:Date.now()});
+    if(current==="pending"){
+     const expiry=bookingExpiry(r);if(expiry<=Date.now())throw Error("A reserva já expirou.");const expStamp=F.Timestamp.fromMillis(expiry),newIds=new Set();for(let t=time;t<time+dur;t+=10){const id=date+"_"+t;newIds.add(id);batch.set(F.doc(db,"slots",id),{bookingId:p.id,ownerUid:user.uid,date,minute:t,expiresAt:expStamp})}for(const d of oldSlots.docs)if(!newIds.has(d.id))batch.delete(d.ref);
+    }else batch.set(F.doc(db,"blocks","booking_"+p.id),{date,start:time,end:time+dur,label:"Agendamento confirmado",bookingId:p.id,createdAt:r.acceptedAt||Date.now()});
+    await batch.commit();return{...r,date,time,end:time+dur,rescheduledAt:Date.now(),status:current};
    }
    if(name==="getBooking"){
     const snap=await F.getDoc(F.doc(db,"bookings",p.id));if(!snap.exists())return null;const r=snap.data();return{...r,status:effectiveStatus(r)};

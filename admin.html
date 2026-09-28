@@ -305,7 +305,7 @@ async function refreshAdmin(){
  }
 }
 async function runAdmin(work){try{await work();await refreshAdmin();adminError="";renderAdmin()}catch(e){adminError=e?.message||"Não foi possível concluir.";renderAdmin()}}
-function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();if(startRealtimeNotifications)startRealtimeNotifications();renderAdmin();if(refreshPushRegistration)refreshPushRegistration()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";if(stopRealtimeNotifications)stopRealtimeNotifications();await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
+function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro. Depois do primeiro login, este aparelho fica conectado até você tocar em Sair.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();if(startRealtimeNotifications)startRealtimeNotifications();renderAdmin();if(refreshPushRegistration)refreshPushRegistration()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";if(stopRealtimeNotifications)stopRealtimeNotifications();await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
 
 function notificationSupportText(){
  if(!("Notification" in window))return["off","Não suportado","Este navegador não oferece notificações Web."];
@@ -324,7 +324,9 @@ function renderPushPanel(){
  ]);
  const head=el("div",{class:"push-panel-head"},[title,badge]);
  const status=el("p",{class:"note",role:"status"});
- const activate=button(Notification.permission==="granted"?"Atualizar notificações":"Ativar notificações",async()=>{
+ const canNotify=("Notification" in window);
+ const alreadyGranted=canNotify&&Notification.permission==="granted";
+ const activate=button(alreadyGranted?"Atualizar notificações":"Ativar notificações",async()=>{
   if(!enablePushNotifications){status.textContent="A conexão com o Firebase ainda está carregando.";return}
   activate.disabled=true;status.textContent="Configurando notificações…";
   try{
@@ -333,10 +335,20 @@ function renderPushPanel(){
    renderPushPanel();
   }catch(err){
    status.textContent=err?.message||"Não foi possível ativar as notificações.";
-  }finally{activate.disabled=false}
+  }finally{
+   if(("Notification" in window)&&Notification.permission!=="denied")activate.disabled=false;
+  }
  });
- if(!("Notification" in window)||Notification.permission==="denied")activate.disabled=true;
- pushUiHost.append(head,el("div",{class:"push-actions"},[activate,status]));
+ if(!canNotify||(canNotify&&Notification.permission==="denied"))activate.disabled=true;
+
+ const iosHelp=!canNotify
+   ? el("p",{class:"notice"},"No iPhone: abra este painel pelo ícone da Tela de Início. No Safari, toque em Compartilhar → Adicionar à Tela de Início. Depois abra pelo novo ícone e volte aqui para ativar as notificações.")
+   : null;
+
+ const body=el("div",{class:"push-actions"},[activate,status]);
+ pushUiHost.append(head);
+ if(iosHelp)pushUiHost.append(iosHelp);
+ pushUiHost.append(body);
 }
 
 function renderAdmin(){if(!adminAuthed)return renderLogin();app.replaceChildren();const head=el("div",{class:"panel-head"},[
@@ -496,6 +508,7 @@ async function boot(){
    import(root+"firebase-messaging.js")
   ]);
   const fb=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fb),db=F.getFirestore(fb);adminAuth=auth;
+  await U.setPersistence(auth,U.browserLocalPersistence);
 
   const pushDeviceId=()=>{
    let id=localStorage.getItem("miguel-barber-push-device-id");
@@ -533,6 +546,7 @@ async function boot(){
    return token;
   };
   refreshPushRegistration=async()=>{
+   if(!("Notification" in window))return;
    if(Notification.permission!=="granted"||localStorage.getItem("miguel-barber-push-enabled")!=="1")return;
    try{await enablePushNotifications()}catch(err){console.warn("Não foi possível atualizar o token de push:",err)}
   };
@@ -656,9 +670,41 @@ async function boot(){
    }
    throw Error("Operação inválida.");
   };
-  loginRemote=async(email,password)=>{const cred=await U.signInWithEmailAndPassword(auth,email,password);if(cred.user.email!==ADMIN_EMAIL){await U.signOut(auth);throw Error("Essa conta não tem acesso ao painel.")}return cred};
-  logoutRemote=()=>U.signOut(auth);onlineReady=true;applySettings(await remoteCall("getPublicSettings",{}));mode.textContent="Painel online · conectado ao Firebase";renderLogin();
- }catch(e){onlineReady=false;mode.textContent="Não foi possível conectar ao Firebase. Confira a configuração e as regras do Firestore.";renderLogin();console.error(e)}
+  loginRemote=async(email,password)=>{
+   const cred=await U.signInWithEmailAndPassword(auth,email,password);
+   if(cred.user.email!==ADMIN_EMAIL){
+    await U.signOut(auth);
+    throw Error("Essa conta não tem acesso ao painel.");
+   }
+   return cred;
+  };
+  logoutRemote=()=>U.signOut(auth);
+
+  onlineReady=true;
+  applySettings(await remoteCall("getPublicSettings",{}));
+  mode.textContent="Painel online · conectado ao Firebase";
+
+  // Aguarda o Firebase restaurar a sessão salva neste aparelho.
+  if(typeof auth.authStateReady==="function")await auth.authStateReady();
+
+  const savedUser=auth.currentUser;
+  if(savedUser&&savedUser.email===ADMIN_EMAIL){
+   adminAuthed=true;
+   await refreshAdmin();
+   if(startRealtimeNotifications)startRealtimeNotifications();
+   renderAdmin();
+   if(refreshPushRegistration)refreshPushRegistration();
+  }else{
+   if(savedUser)await U.signOut(auth);
+   adminAuthed=false;
+   renderLogin();
+  }
+ }catch(e){
+  onlineReady=false;
+  mode.textContent="Não foi possível conectar ao Firebase. Confira a configuração e as regras do Firestore.";
+  renderLogin();
+  console.error(e);
+ }
 }
 applySettings(DEFAULTS);boot();
 </script>

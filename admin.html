@@ -78,6 +78,16 @@
 .booking-toast .booking-alert-actions{margin-top:10px}
 @media(max-width:600px){.booking-toast-stack{right:10px;top:10px;width:calc(100vw - 20px)}}
 
+
+.push-panel{border:1px solid var(--line);background:#fff;border-radius:16px;padding:16px;margin:14px 0 18px}
+.push-panel-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.push-panel h2{font-size:20px;margin:0 0 4px}
+.push-panel .note{margin:0}
+.push-state{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 10px;border-radius:999px;background:#f3f3f0}
+.push-state.on{background:#e3efe9;color:#245941}
+.push-state.off{background:#f7ecec;color:#8b3434}
+.push-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+
 @media(max-width:800px){.block-grid{grid-template-columns:1fr}.daily-metrics{grid-template-columns:repeat(2,1fr)!important}}
 @media(max-width:520px){.service-checks{grid-template-columns:1fr}.daily-metrics{grid-template-columns:1fr 1fr!important}}
 
@@ -103,10 +113,12 @@ const FIREBASE_CONFIG={
   measurementId:"G-WL7FGT08LK"
 };
 const ADMIN_EMAIL="prototipo@gmail.com";
+const VAPID_KEY="BNlpxpW50aDyBSnZ1usQwjvrjF9XRQYYBwqIzU1pLwXqdxuIJfjb7i_scERQOjBRwr7PZk2osOTXgmCbilU8yy0";
 const DEMO=new URLSearchParams(location.search).get("demo")==="1",DEMO_KEY="barbearia:demo:v2";
 const app=document.getElementById("app"),mode=document.getElementById("mode");
 let settings={...DEFAULTS},workingHours=structuredClone(DEFAULT_WORKING_HOURS),workingDays=[...DEFAULTS.workingDays],periods=DEFAULTS.periods,onlineReady=false,remoteCall,adminAuth,loginRemote,logoutRemote,adminAuthed=false,records=[],blocks=[],adminError="";
 let livePending=[],bookingAlertsHost=null,realtimeUnsubscribe=null,realtimeExpiryTimer=null,startRealtimeNotifications=null,stopRealtimeNotifications=null,knownPendingIds=new Set();
+let enablePushNotifications=null,refreshPushRegistration=null,pushUiHost=null;
 let adminTab="overview",adminMonth=brazilNow().date.slice(0,7),adminDate=brazilNow().date,agendaFilter="all",clientSearch="";
 const LABELS={pending:"Aguardando confirmação",accepted:"Confirmado",cancelled:"Cancelado",completed:"Concluído",expired:"Expirado",no_show:"Faltou"};
 const PENDING_TTL=60*60*1000;
@@ -293,7 +305,40 @@ async function refreshAdmin(){
  }
 }
 async function runAdmin(work){try{await work();await refreshAdmin();adminError="";renderAdmin()}catch(e){adminError=e?.message||"Não foi possível concluir.";renderAdmin()}}
-function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();if(startRealtimeNotifications)startRealtimeNotifications();renderAdmin()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";if(stopRealtimeNotifications)stopRealtimeNotifications();await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
+function renderLogin(){app.replaceChildren();const card=el("section",{class:"card login"},[el("h1",{},"Área do barbeiro"),el("p",{class:"note"},DEMO?"Demonstração local. Use somente dados fictícios.":"Entre com a conta autorizada do barbeiro.")]);if(DEMO){card.append(button("Entrar na demonstração",async()=>{adminAuthed=true;await runAdmin(async()=>{})}));app.append(card);return}if(!onlineReady){card.append(el("p",{class:"notice"},"O Firebase ainda precisa ser configurado para usar o painel online."),el("a",{class:"button",href:"admin.html?demo=1"},"Abrir demonstração"));app.append(card);return}const form=el("form"),email=formField("E-mail","admin-email","email","",{required:true,autocomplete:"username"}),pass=formField("Senha","admin-password","password","",{required:true,autocomplete:"current-password"}),status=el("p",{class:"error"}),submit=el("button",{class:"button",type:"submit"},"Entrar");form.append(email.wrap,pass.wrap,submit,status);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{await loginRemote(email.input.value,pass.input.value);adminAuthed=true;await refreshAdmin();if(startRealtimeNotifications)startRealtimeNotifications();renderAdmin();if(refreshPushRegistration)refreshPushRegistration()}catch(err){status.textContent=err?.message||"Não foi possível entrar.";if(stopRealtimeNotifications)stopRealtimeNotifications();await logoutRemote()}finally{submit.disabled=false}};card.append(form);app.append(card)}
+
+function notificationSupportText(){
+ if(!("Notification" in window))return["off","Não suportado","Este navegador não oferece notificações Web."];
+ if(Notification.permission==="denied")return["off","Bloqueadas","Libere as notificações nas configurações do navegador/celular."];
+ if(Notification.permission==="granted"&&localStorage.getItem("miguel-barber-push-enabled")==="1")return["on","Ativadas","Este aparelho está preparado para receber avisos com o painel fechado."];
+ return["off","Desativadas","Ative para receber novos agendamentos neste aparelho."];
+}
+function renderPushPanel(){
+ if(!pushUiHost||!pushUiHost.isConnected)return;
+ const [cls,label,desc]=notificationSupportText();
+ pushUiHost.replaceChildren();
+ const badge=el("span",{class:"push-state "+cls},label);
+ const title=el("div",{},[
+  el("h2",{},"Notificações no celular"),
+  el("p",{class:"note"},desc)
+ ]);
+ const head=el("div",{class:"push-panel-head"},[title,badge]);
+ const status=el("p",{class:"note",role:"status"});
+ const activate=button(Notification.permission==="granted"?"Atualizar notificações":"Ativar notificações",async()=>{
+  if(!enablePushNotifications){status.textContent="A conexão com o Firebase ainda está carregando.";return}
+  activate.disabled=true;status.textContent="Configurando notificações…";
+  try{
+   await enablePushNotifications();
+   status.textContent="Notificações ativadas neste aparelho.";
+   renderPushPanel();
+  }catch(err){
+   status.textContent=err?.message||"Não foi possível ativar as notificações.";
+  }finally{activate.disabled=false}
+ });
+ if(!("Notification" in window)||Notification.permission==="denied")activate.disabled=true;
+ pushUiHost.append(head,el("div",{class:"push-actions"},[activate,status]));
+}
+
 function renderAdmin(){if(!adminAuthed)return renderLogin();app.replaceChildren();const head=el("div",{class:"panel-head"},[
  el("div",{},[el("p",{class:"note"},DEMO?"Modo de demonstração":"Painel conectado"),el("h1",{},"Controle da barbearia")]),
  button("Sair",async()=>{
@@ -303,6 +348,9 @@ function renderAdmin(){if(!adminAuthed)return renderLogin();app.replaceChildren(
  },true)
 ]);
 app.append(head);
+pushUiHost=el("section",{id:"push-panel",class:"push-panel"});
+app.append(pushUiHost);
+renderPushPanel();
 bookingAlertsHost=el("section",{id:"booking-alerts",class:"booking-alerts"});
 app.append(bookingAlertsHost);
 renderBookingAlerts();const tabs=el("div",{class:"tabs"});for(const[k,l]of[["overview","Resumo"],["agenda","Agenda"],["cash","Caixa"],["clients","Clientes"],["blocks","Bloqueios"],["services","Serviços e horários"],["texts","Textos"],["appearance","Aparência"]])tabs.append(el("button",{type:"button",class:"tab"+(adminTab===k?" active":""),onclick:()=>{adminTab=k;renderAdmin()}},l));app.append(tabs);if(adminError)app.append(el("p",{class:"error"},adminError));if(["overview","cash","clients","blocks"].includes(adminTab)){const month=formField("Mês consultado","admin-month","month",adminMonth);month.input.onchange=()=>{if(!/^\d{4}-\d{2}$/.test(month.input.value))return;adminMonth=month.input.value;if(!adminDate.startsWith(adminMonth))adminDate=adminMonth+"-01";runAdmin(async()=>{})};app.append(el("div",{class:"filter-row"},[month.wrap,button("Atualizar",()=>runAdmin(async()=>{}),true)]))}if(adminTab==="agenda")return renderAgenda();if(adminTab==="cash")return renderCash(false);if(adminTab==="clients")return renderClients();if(adminTab==="blocks")return renderBlocks();if(adminTab==="services")return renderServicesAdmin();if(adminTab==="texts")return renderTexts();if(adminTab==="appearance")return renderAppearance();renderCash(true)}
@@ -441,8 +489,53 @@ async function boot(){
  mode.textContent="Conectando ao Firebase…";
  try{
   const root="https://www.gstatic.com/firebasejs/11.10.0/";
-  const [A,U,F]=await Promise.all([import(root+"firebase-app.js"),import(root+"firebase-auth.js"),import(root+"firebase-firestore.js")]);
+  const [A,U,F,M]=await Promise.all([
+   import(root+"firebase-app.js"),
+   import(root+"firebase-auth.js"),
+   import(root+"firebase-firestore.js"),
+   import(root+"firebase-messaging.js")
+  ]);
   const fb=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fb),db=F.getFirestore(fb);adminAuth=auth;
+
+  const pushDeviceId=()=>{
+   let id=localStorage.getItem("miguel-barber-push-device-id");
+   if(!id){id="device_"+crypto.randomUUID();localStorage.setItem("miguel-barber-push-device-id",id)}
+   return id;
+  };
+  const savePushToken=async token=>{
+   if(!auth.currentUser||auth.currentUser.email!==ADMIN_EMAIL)throw Error("Entre no painel do barbeiro primeiro.");
+   const id=pushDeviceId();
+   await F.setDoc(F.doc(db,"pushDevices",id),{
+    token,
+    ownerUid:auth.currentUser.uid,
+    email:auth.currentUser.email,
+    enabled:true,
+    userAgent:String(navigator.userAgent||"").slice(0,500),
+    updatedAt:Date.now()
+   },{merge:true});
+   localStorage.setItem("miguel-barber-push-enabled","1");
+  };
+  enablePushNotifications=async()=>{
+   if(!window.isSecureContext)throw Error("As notificações precisam do site em HTTPS.");
+   if(!("Notification" in window))throw Error("Este navegador não oferece notificações Web.");
+   const supported=await M.isSupported();
+   if(!supported)throw Error("Notificações push não são compatíveis com este navegador/aparelho.");
+   let permission=Notification.permission;
+   if(permission==="default")permission=await Notification.requestPermission();
+   if(permission!=="granted")throw Error("A permissão de notificações não foi liberada.");
+   const registration=await navigator.serviceWorker.register("./firebase-messaging-sw.js");
+   await navigator.serviceWorker.ready;
+   const messaging=M.getMessaging(fb);
+   const token=await M.getToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:registration});
+   if(!token)throw Error("O Firebase não conseguiu gerar o token deste aparelho.");
+   await savePushToken(token);
+   renderPushPanel();
+   return token;
+  };
+  refreshPushRegistration=async()=>{
+   if(Notification.permission!=="granted"||localStorage.getItem("miguel-barber-push-enabled")!=="1")return;
+   try{await enablePushNotifications()}catch(err){console.warn("Não foi possível atualizar o token de push:",err)}
+  };
   stopRealtimeNotifications=()=>{
    if(realtimeUnsubscribe){realtimeUnsubscribe();realtimeUnsubscribe=null}
    if(realtimeExpiryTimer){clearInterval(realtimeExpiryTimer);realtimeExpiryTimer=null}
